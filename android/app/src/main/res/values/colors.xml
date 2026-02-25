@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="navy_primary">#1A2B4A</color>
+    <color name="sand_accent">#C8A96E</color>
+    <color name="forest_green">#2D5016</color>
+    <color name="alert_red">#8B2020</color>
+    <color name="dark_bg">#0F1923</color>
+    <color name="surface_bg">#1C2D3E</color>
+    <color name="off_white">#F5F5F0</color>
+    <color name="muted_gray">#8899AA</color>
+</resources>

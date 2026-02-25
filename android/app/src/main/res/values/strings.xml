@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kanta World Travel</string>
+    <string name="label_home">ホーム</string>
+    <string name="label_country_list">国一覧</string>
+    <string name="label_country_detail">国詳細</string>
+    <string name="label_search">検索</string>
+    <string name="label_safety">安全情報</string>
+    <string name="label_attractions">観光スポット</string>
+    <string name="hint_search_countries">国名・地域で検索</string>
+    <string name="loading">読み込み中...</string>
+    <string name="error_occurred">エラーが発生しました</string>
+    <string name="retry">再試行</string>
+    <string name="no_data">データがありません</string>
+    <string name="offline_cache_notice">オフラインモード（キャッシュデータ表示中）</string>
+</resources>

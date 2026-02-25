@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    丸型アプリアイコン（プレースホルダー）
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/navy_primary" />
+    <foreground>
+        <inset android:drawable="@color/sand_accent"
+            android:insetTop="25%"
+            android:insetBottom="25%"
+            android:insetLeft="25%"
+            android:insetRight="25%" />
+    </foreground>
+</adaptive-icon>
