@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import countries, safety, attractions
+from app.api import countries, safety, attractions, news
 from app.core.config import settings
 
 app = FastAPI(
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(countries.router)
 app.include_router(safety.router)
 app.include_router(attractions.router)
+app.include_router(news.router)
 
 
 @app.get("/health", tags=["system"])
