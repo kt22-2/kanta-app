@@ -209,7 +209,7 @@ class RestCountriesService:
             try:
                 resp = await client.get(
                     f"{self.base_url}/alpha/{code}",
-                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng"},
+                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies"},
                 )
                 if resp.status_code == 404:
                     return None
@@ -228,7 +228,7 @@ class RestCountriesService:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(
                 f"{self.base_url}/all",
-                params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng"},
+                params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies"},
             )
             resp.raise_for_status()
             return [_parse_country(r) for r in resp.json()]
