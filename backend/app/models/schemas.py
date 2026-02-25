@@ -62,3 +62,36 @@ class AttractionsResponse(BaseModel):
     attractions: list[Attraction]
     best_season: str | None = None
     travel_tips: list[str]
+
+
+class OTMAttraction(BaseModel):
+    name: str
+    description: str | None = None
+    category: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    rating: float | None = None
+    wikipedia_url: str | None = None
+
+
+class EnrichedAttractionsResponse(BaseModel):
+    country_code: str
+    country_name: str
+    otm_attractions: list[OTMAttraction]
+    ai_summary: list[Attraction]
+    best_season: str | None = None
+    travel_tips: list[str]
+
+
+class NewsArticle(BaseModel):
+    title: str
+    description: str | None = None
+    url: str
+    source: str
+    published_at: str | None = None
+
+
+class NewsResponse(BaseModel):
+    country_code: str
+    articles: list[NewsArticle]
+    total: int

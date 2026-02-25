@@ -209,7 +209,7 @@ class RestCountriesService:
             try:
                 resp = await client.get(
                     f"{self.base_url}/alpha/{code}",
-                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies"},
+                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng"},
                 )
                 if resp.status_code == 404:
                     return None
