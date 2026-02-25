@@ -3,13 +3,15 @@ import type {
   SafetyInfo,
   EntryRequirement,
   AttractionsResponse,
+  NewsResponse,
+  EnrichedAttractionsResponse,
 } from "./types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function fetchApi<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
   }
@@ -43,6 +45,10 @@ export async function getEntryRequirement(
 
 export async function getAttractions(
   code: string
-): Promise<AttractionsResponse> {
-  return fetchApi<AttractionsResponse>(`/api/countries/${code}/attractions`);
+): Promise<EnrichedAttractionsResponse> {
+  return fetchApi<EnrichedAttractionsResponse>(`/api/countries/${code}/attractions`);
+}
+
+export async function getNews(code: string): Promise<NewsResponse> {
+  return fetchApi<NewsResponse>(`/api/countries/${code}/news`);
 }
