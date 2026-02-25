@@ -164,6 +164,7 @@ def _parse_country(raw: dict) -> dict:
         "flag_emoji": raw.get("flag", ""),
         "latitude": latlng[0] if len(latlng) > 0 else None,
         "longitude": latlng[1] if len(latlng) > 1 else None,
+        "timezones": raw.get("timezones", []),
     }
 
 
@@ -205,11 +206,11 @@ class RestCountriesService:
             if not _is_expired(ts):
                 return data
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             try:
                 resp = await client.get(
                     f"{self.base_url}/alpha/{code}",
-                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies"},
+                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng"},
                 )
                 if resp.status_code == 404:
                     return None
@@ -221,14 +222,22 @@ class RestCountriesService:
                 country = _parse_country(raw)
                 _cache[cache_key] = (country, time.time())
                 return country
-            except httpx.HTTPStatusError:
+            except (httpx.HTTPStatusError, httpx.TimeoutException):
                 return None
+
+    async def get_coordinates(self, code: str) -> tuple[float, float] | None:
+        """国コードから座標(lat, lng)を取得する。エラー時はNone。"""
+        # まずキャッシュされた国情報から取得を試みる
+        country = await self.get_country(code)
+        if country and country.get("latitude") is not None and country.get("longitude") is not None:
+            return (country["latitude"], country["longitude"])
+        return None
 
     async def _fetch_all(self) -> list[dict]:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.get(
                 f"{self.base_url}/all",
-                params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies"},
+                params={"fields": "name,cca2,flags,capital,region,subregion,population,languages,currencies,latlng"},
             )
             resp.raise_for_status()
             return [_parse_country(r) for r in resp.json()]
