@@ -132,6 +132,27 @@ class TestXmlParsing:
         result = _parse_xml(xml)
         assert result["level"] == 3
 
+    def test_xml_parse_keeps_full_text(self):
+        from app.services.mofa_service import _parse_xml
+        lead = "Long lead text that should not be truncated " + ("x" * 400)
+        title = "Risk Title"
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata>"
+            "<riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            f"<riskTitle>{title}</riskTitle>"
+            f"<riskLead>{lead}</riskLead>"
+            "</opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert lead in result["summary"]
+        main_detail = next(
+            d for d in result["details"] if d["category"] == "外務省危険情報"
+        )
+        assert lead in main_detail["description"]
+        assert len(main_detail["description"]) >= len(lead)
+
 
 # ── State Dept 統合テスト ─────────────────────────────────────────
 
