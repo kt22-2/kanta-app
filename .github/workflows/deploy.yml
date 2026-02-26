@@ -33,7 +33,7 @@ jobs:
           docker build \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }} \
             -f Dockerfiles/backend.Dockerfile \
-            ./backend
+            .
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }}
 
       - name: Deploy backend to Cloud Run
@@ -60,7 +60,7 @@ jobs:
             --build-arg NEXT_PUBLIC_API_URL=${{ steps.backend.outputs.url }} \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }} \
             -f Dockerfiles/frontend.Dockerfile \
-            ./frontend
+            .
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}
 
       - name: Deploy frontend to Cloud Run

@@ -1,14 +1,14 @@
 # Stage 1: 依存関係インストール
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm ci
 
 # Stage 2: ビルド
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY frontend/ .
 
 # バックエンド URL（Docker 内部ネットワーク経由）
 ARG NEXT_PUBLIC_API_URL=http://backend:8000
