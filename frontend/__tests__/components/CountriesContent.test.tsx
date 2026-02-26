@@ -46,33 +46,33 @@ const mockCountries: Country[] = [
 
 describe("CountriesContent", () => {
   it("ローディング中はスピナーを表示する", () => {
-    mockUseSWR.mockReturnValue({ data: undefined, isLoading: true, error: undefined });
+    mockUseSWR.mockReturnValue({ data: undefined, isLoading: true, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
-    // LoadingSpinner が表示される
     expect(screen.getByText("国情報を読み込み中...")).toBeInTheDocument();
   });
 
   it("データ取得後に国名カードが表示される", () => {
-    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined });
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
-    expect(screen.getByText("Japan")).toBeInTheDocument();
-    expect(screen.getByText("France")).toBeInTheDocument();
+    expect(screen.getByText("日本")).toBeInTheDocument();
+    expect(screen.getByText("フランス")).toBeInTheDocument();
   });
 
   it("国数が表示される", () => {
-    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined });
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
-    expect(screen.getByText("2カ国")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("カ国")).toBeInTheDocument();
   });
 
   it("エラー時はエラーメッセージを表示する", () => {
-    mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: new Error("fetch error") });
+    mockUseSWR.mockReturnValue({ data: undefined, isLoading: false, error: new Error("fetch error"), mutate: jest.fn() });
     render(<CountriesContent />);
     expect(screen.getByText(/データの読み込みに失敗しました/)).toBeInTheDocument();
   });
 
   it("検索入力が可能", () => {
-    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined });
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
     const input = screen.getByPlaceholderText("国名・国コードで検索...");
     fireEvent.change(input, { target: { value: "Japan" } });
@@ -80,9 +80,8 @@ describe("CountriesContent", () => {
   });
 
   it("リージョンボタンが表示される", () => {
-    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined });
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
-    // ボタン要素に絞って確認
     const buttons = screen.getAllByRole("button");
     const buttonTexts = buttons.map((b) => b.textContent);
     expect(buttonTexts).toContain("全て");
@@ -91,13 +90,44 @@ describe("CountriesContent", () => {
   });
 
   it("リージョンボタンのクリックで state が更新される", () => {
-    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined });
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
     render(<CountriesContent />);
-    // ボタン要素の中から「アジア」ボタンを取得
     const buttons = screen.getAllByRole("button");
     const asiaButton = buttons.find((b) => b.textContent === "アジア")!;
     fireEvent.click(asiaButton);
-    // クリック後に active スタイル（text-[#0F1923]）が適用されることを確認
-    expect(asiaButton).toHaveClass("text-[#0F1923]");
+    // クリック後に active スタイル（text-background）が適用されることを確認
+    expect(asiaButton).toHaveClass("text-background");
+  });
+
+  it("危険度フィルタボタンが表示される", () => {
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
+    render(<CountriesContent />);
+    const buttons = screen.getAllByRole("button");
+    const buttonTexts = buttons.map((b) => b.textContent);
+    expect(buttonTexts).toContain("安全");
+    expect(buttonTexts).toContain("注意");
+    expect(buttonTexts).toContain("危険");
+    expect(buttonTexts).toContain("渡航中止");
+    expect(buttonTexts).toContain("退避勧告");
+  });
+
+  it("ソートドロップダウンに世界遺産順が表示される", () => {
+    mockUseSWR.mockReturnValue({ data: mockCountries, isLoading: false, error: undefined, mutate: jest.fn() });
+    render(<CountriesContent />);
+    expect(screen.getByRole("option", { name: "世界遺産順" })).toBeInTheDocument();
+  });
+
+  it("危険度フィルタで絞り込みができる", () => {
+    const countriesWithSafety: Country[] = [
+      { ...mockCountries[0], safety_level: 0 }, // 日本: 安全
+      { ...mockCountries[1], safety_level: 2 }, // フランス: 危険
+    ];
+    mockUseSWR.mockReturnValue({ data: countriesWithSafety, isLoading: false, error: undefined, mutate: jest.fn() });
+    render(<CountriesContent />);
+    const buttons = screen.getAllByRole("button");
+    const dangerButton = buttons.find((b) => b.textContent === "危険")!;
+    fireEvent.click(dangerButton);
+    expect(screen.getByText("フランス")).toBeInTheDocument();
+    expect(screen.queryByText("日本")).not.toBeInTheDocument();
   });
 });

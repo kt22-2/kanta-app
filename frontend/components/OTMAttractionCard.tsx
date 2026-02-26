@@ -19,9 +19,9 @@ export default function OTMAttractionCard({ attraction }: Props) {
   return (
     <div className="rounded-xl glass-card p-4">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-sm text-[#F5F5F0]">{attraction.name}</h3>
+        <h3 className="font-semibold text-sm text-foreground">{attraction.name}</h3>
         {attraction.category && (
-          <span className="shrink-0 text-xs border border-[#C8A96E]/30 text-[#C8A96E] rounded-full px-2 py-0.5">
+          <span className="shrink-0 text-xs border border-accent/30 text-accent rounded-full px-2 py-0.5">
             {attraction.category}
           </span>
         )}
@@ -32,7 +32,7 @@ export default function OTMAttractionCard({ attraction }: Props) {
       )}
 
       {attraction.description && (
-        <p className="mt-2 text-sm text-[#8899AA] leading-relaxed line-clamp-3">
+        <p className="mt-2 text-sm text-muted leading-relaxed line-clamp-3">
           {attraction.description}
         </p>
       )}
@@ -43,7 +43,7 @@ export default function OTMAttractionCard({ attraction }: Props) {
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-[#8899AA] hover:text-[#C8A96E] transition-colors"
+            className="flex items-center gap-1 text-xs text-muted hover:text-accent transition-colors"
           >
             <MapPin className="h-3.5 w-3.5" />
             地図で見る
@@ -54,7 +54,7 @@ export default function OTMAttractionCard({ attraction }: Props) {
             href={attraction.wikipedia_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs text-[#8899AA] hover:text-[#C8A96E] transition-colors"
+            className="flex items-center gap-1 text-xs text-muted hover:text-accent transition-colors"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Wikipedia

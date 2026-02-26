@@ -51,7 +51,8 @@
       "Bash(npm run build)",
       "Bash(npm test -- --watchAll=false)",
       "WebFetch(domain:whc.unesco.org)",
-      "WebFetch(domain:query.wikidata.org)"
+      "WebFetch(domain:query.wikidata.org)",
+      "Bash(git commit:*)"
     ]
   }
 }

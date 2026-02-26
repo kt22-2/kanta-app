@@ -35,18 +35,10 @@ function StatCounter({ item, start }: { item: StatItem; start: boolean }) {
   const count = useCountUp(item.value, 1200, start);
   return (
     <div className="text-center">
-      <div
-        className="text-4xl font-black"
-        style={{
-          background: "linear-gradient(135deg, #C8A96E 0%, #E8C980 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        } as React.CSSProperties}
-      >
+      <div className="text-4xl font-black gradient-text">
         {count}{item.suffix}
       </div>
-      <div className="text-sm text-[#8899AA] mt-1">{item.label}</div>
+      <div className="text-sm text-muted mt-1">{item.label}</div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default function NewsSection({ code }: Props) {
 
   if (error) {
     return (
-      <p className="text-sm text-[#8899AA]">
+      <p className="text-sm text-muted">
         現在ニュースを取得できません
       </p>
     );
@@ -40,7 +40,7 @@ export default function NewsSection({ code }: Props) {
 
   if (!data || data.articles.length === 0) {
     return (
-      <p className="text-sm text-[#8899AA]">
+      <p className="text-sm text-muted">
         現在ニュースを取得できません
       </p>
     );

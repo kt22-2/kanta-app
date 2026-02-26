@@ -30,21 +30,21 @@ export default function ClimateSection({ code }: Props) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-5 animate-pulse">
-        <div className="h-4 w-24 bg-[#0F1923] rounded mb-4" />
-        <div className="h-48 bg-[#0F1923] rounded" />
+      <div className="rounded-xl glass-card p-5 animate-pulse">
+        <div className="h-4 w-24 bg-background rounded mb-4" />
+        <div className="h-48 bg-background rounded" />
       </div>
     );
   }
 
   if (!data || !data.available || data.monthly.length === 0) {
     return (
-      <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-5">
+      <div className="rounded-xl glass-card p-5">
         <div className="flex items-center gap-2 mb-2">
-          <CloudRain className="h-4 w-4 text-[#C8A96E]" />
-          <span className="text-xs font-semibold text-[#8899AA] uppercase tracking-wide">気候</span>
+          <CloudRain className="h-4 w-4 text-accent" />
+          <span className="text-xs font-semibold text-muted uppercase tracking-wide">気候</span>
         </div>
-        <p className="text-sm text-[#8899AA]">気候データを取得できませんでした</p>
+        <p className="text-sm text-muted">気候データを取得できませんでした</p>
       </div>
     );
   }
@@ -65,10 +65,10 @@ export default function ClimateSection({ code }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-5">
+    <div className="rounded-xl glass-card p-5">
       <div className="flex items-center gap-2 mb-4">
-        <CloudRain className="h-4 w-4 text-[#C8A96E]" />
-        <span className="text-xs font-semibold text-[#8899AA] uppercase tracking-wide">月別気候（2023年）</span>
+        <CloudRain className="h-4 w-4 text-accent" />
+        <span className="text-xs font-semibold text-muted uppercase tracking-wide">月別気候（2023年）</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>

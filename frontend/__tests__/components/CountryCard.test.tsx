@@ -16,14 +16,14 @@ const mockCountry: Country = {
 };
 
 describe("CountryCard", () => {
-  it("国名を表示する", () => {
-    render(<CountryCard country={mockCountry} />);
-    expect(screen.getByText("Japan")).toBeInTheDocument();
-  });
-
-  it("日本語名を表示する", () => {
+  it("日本語名をメインに表示する", () => {
     render(<CountryCard country={mockCountry} />);
     expect(screen.getByText("日本")).toBeInTheDocument();
+  });
+
+  it("英語名をサブテキストに表示する", () => {
+    render(<CountryCard country={mockCountry} />);
+    expect(screen.getByText("Japan")).toBeInTheDocument();
   });
 
   it("地域を表示する（日本語）", () => {
