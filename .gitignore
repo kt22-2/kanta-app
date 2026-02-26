@@ -37,6 +37,16 @@ android/.idea/
 *.aab
 *.keystore
 
+# Claude / AI tools
+.claude/worktrees/
+.claude/settings.local.json
+.playwright-mcp/
+
+# Windows reserved device names
+nul
+nul/
+**/nul
+
 # OS
 .DS_Store
 Thumbs.db
