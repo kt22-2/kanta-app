@@ -100,7 +100,6 @@ class GNewsService:
             _GOOGLE_NEWS_RSS,
             params={"q": query, "hl": hl, "gl": gl, "ceid": ceid},
             headers={"User-Agent": "Mozilla/5.0 (compatible; TravelApp/1.0)"},
-            follow_redirects=True,
         )
         resp.raise_for_status()
         return _parse_rss(resp.text, limit)

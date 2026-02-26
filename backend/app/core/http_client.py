@@ -20,6 +20,7 @@ def get_http_client() -> httpx.AsyncClient:
                 max_keepalive_connections=20,
             ),
             timeout=httpx.Timeout(30.0, connect=10.0),
+            follow_redirects=True,
         )
     return _client
 

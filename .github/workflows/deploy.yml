@@ -16,8 +16,8 @@ jobs:
           host: ${{ secrets.OCI_HOST }}
           username: ${{ secrets.OCI_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
+          script_stop: true
           script: |
-            set -e
             cd ~/app
             git pull origin main
             docker compose up -d --build

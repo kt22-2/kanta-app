@@ -228,7 +228,7 @@ async def _fetch_xml(mofa_code: str) -> bytes | None:
     """外務省XMLオープンデータを取得する。HTMLが返った場合はNone（安全国）。"""
     url = MOFA_XML_BASE_URL.format(code=mofa_code)
     client = get_http_client()
-    resp = await client.get(url, follow_redirects=True)
+    resp = await client.get(url)
     resp.raise_for_status()
     content_type = resp.headers.get("content-type", "")
     if "text/html" in content_type:

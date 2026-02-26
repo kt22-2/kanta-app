@@ -35,6 +35,7 @@ class HeritageService:
             },
             headers=self._HEADERS,
         )
+        resp.raise_for_status()
         raw = resp.json()
         members = raw.get("query", {}).get("categorymembers", [])
         # "List of..." / "UNESCO..." のような非スポット記事を除外
@@ -66,6 +67,7 @@ class HeritageService:
             },
             headers=self._HEADERS,
         )
+        resp.raise_for_status()
         raw = resp.json()
         pages = raw.get("query", {}).get("pages", {})
 

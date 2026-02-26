@@ -42,6 +42,7 @@ class WikipediaService:
         try:
             client = get_http_client()
             resp = await client.get(api_url, params=params, headers=headers)
+            resp.raise_for_status()
             data = resp.json()
 
             pages = data.get("query", {}).get("pages", {})

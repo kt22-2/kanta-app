@@ -139,7 +139,7 @@ class NewsService:
         url = f"{self.RSS_URL}?q={query}&hl=en&gl=US&ceid=US:en"
 
         client = get_http_client()
-        resp = await client.get(url, follow_redirects=True)
+        resp = await client.get(url)
         resp.raise_for_status()
 
         root = ET.fromstring(resp.text)
