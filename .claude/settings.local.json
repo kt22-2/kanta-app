@@ -52,7 +52,9 @@
       "Bash(npm test -- --watchAll=false)",
       "WebFetch(domain:whc.unesco.org)",
       "WebFetch(domain:query.wikidata.org)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(docker compose images)",
+      "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.Size}}\")"
     ]
   }
 }

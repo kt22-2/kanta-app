@@ -15,6 +15,7 @@ env/
 .coverage
 htmlcov/
 backend/.env
+.env
 
 # Node / Frontend
 node_modules/
