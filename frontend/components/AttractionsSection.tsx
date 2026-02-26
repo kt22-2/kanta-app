@@ -85,28 +85,6 @@ export default function AttractionsSection({ code }: Props) {
         </div>
       )}
 
-      {/* 旅行のコツ */}
-      {data.travel_tips && data.travel_tips.length > 0 && (
-        <div>
-          <h3 className="mb-3 font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Lightbulb className="h-4 w-4 text-[#C8A96E]" />
-            旅行のコツ
-          </h3>
-          <ul className="space-y-2">
-            {data.travel_tips.map((tip, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-sm text-[#8899AA]"
-              >
-                <span className="mt-0.5 text-[#C8A96E] font-bold shrink-0">
-                  {i + 1}.
-                </span>
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

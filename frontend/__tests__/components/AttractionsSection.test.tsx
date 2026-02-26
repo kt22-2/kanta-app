@@ -47,20 +47,4 @@ describe("AttractionsSection", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("旅行のコツがある場合は表示する", () => {
-    mockUseSWR.mockReturnValue({
-      data: {
-        country_code: "JP",
-        country_name: "Japan",
-        otm_attractions: [],
-        ai_summary: [],
-        best_season: null,
-        travel_tips: ["交通ICカードが便利です"],
-      },
-      error: undefined,
-      isLoading: false,
-    });
-    render(<AttractionsSection code="JP" />);
-    expect(screen.getByText("交通ICカードが便利です")).toBeInTheDocument();
-  });
 });
