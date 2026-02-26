@@ -97,7 +97,7 @@ describe("CountriesContent", () => {
     const buttons = screen.getAllByRole("button");
     const asiaButton = buttons.find((b) => b.textContent === "アジア")!;
     fireEvent.click(asiaButton);
-    // クリック後に active スタイル（bg-[#C8A96E]）が適用されることを確認
-    expect(asiaButton).toHaveClass("bg-[#C8A96E]");
+    // クリック後に active スタイル（text-[#0F1923]）が適用されることを確認
+    expect(asiaButton).toHaveClass("text-[#0F1923]");
   });
 });

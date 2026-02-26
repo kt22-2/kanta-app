@@ -23,6 +23,9 @@ class Country(BaseModel):
     flag_emoji: str
     latitude: float | None = None
     longitude: float | None = None
+    safety_level: int | None = None
+    borders: list[str] = []
+    timezones: list[str] = []
 
 
 class SafetyDetail(BaseModel):
@@ -38,6 +41,9 @@ class SafetyInfo(BaseModel):
     summary: str
     details: list[SafetyDetail]
     last_updated: datetime | None = None
+    mofa_url: str | None = None
+    infection_level: int = 0
+    safety_measure_url: str | None = None
 
 
 class EntryRequirement(BaseModel):
@@ -88,10 +94,62 @@ class OTMAttraction(BaseModel):
     wikipedia_url: str | None = None
 
 
+class HeritageSite(BaseModel):
+    name: str
+    description: str | None = None
+    registered_year: int | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    image_url: str | None = None
+    wikipedia_url: str | None = None
+
+
 class EnrichedAttractionsResponse(BaseModel):
     country_code: str
     country_name: str
+    heritage_sites: list[HeritageSite] = []
     otm_attractions: list[OTMAttraction]
     ai_summary: list[Attraction]
     best_season: str | None = None
     travel_tips: list[str] = []
+
+
+class ExchangeRate(BaseModel):
+    currency_code: str
+    rate: float  # 1 JPY = rate 外貨
+
+
+class ExchangeInfo(BaseModel):
+    country_code: str
+    base: str = "JPY"
+    rates: list[ExchangeRate]
+    date: str | None = None
+    available: bool = True
+
+
+class WikiSummary(BaseModel):
+    country_code: str
+    title: str
+    summary: str
+    url: str | None = None
+    available: bool = True
+
+
+class MonthlyClimate(BaseModel):
+    month: int
+    temp_max: float | None = None
+    temp_min: float | None = None
+    precipitation: float | None = None
+
+
+class ClimateInfo(BaseModel):
+    country_code: str
+    monthly: list[MonthlyClimate]
+    available: bool = True
+
+
+class EconomicInfo(BaseModel):
+    country_code: str
+    gdp_per_capita: float | None = None
+    gdp_year: int | None = None
+    available: bool = True

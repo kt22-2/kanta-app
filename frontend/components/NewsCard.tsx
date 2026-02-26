@@ -22,7 +22,7 @@ export default function NewsCard({ article }: Props) {
   const date = formatDate(article.published_at);
 
   return (
-    <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-4">
+    <div className="rounded-xl glass-card gradient-border-hover p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(200,169,110,0.12)]">
       <a
         href={article.url}
         target="_blank"

@@ -5,10 +5,17 @@ import type {
   AttractionsResponse,
   NewsResponse,
   EnrichedAttractionsResponse,
+  ExchangeInfo,
+  WikiSummary,
+  ClimateInfo,
+  EconomicInfo,
 } from "./types";
 
+// サーバー側: バックエンドに直接接続、クライアント側: Next.js rewrites 経由（相対URL）
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  typeof window === "undefined"
+    ? (process.env.BACKEND_URL ?? "http://127.0.0.1:8000")
+    : "";
 
 async function fetchApi<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
@@ -51,4 +58,20 @@ export async function getAttractions(
 
 export async function getNews(code: string): Promise<NewsResponse> {
   return fetchApi<NewsResponse>(`/api/countries/${code}/news`);
+}
+
+export async function getExchangeInfo(code: string): Promise<ExchangeInfo> {
+  return fetchApi<ExchangeInfo>(`/api/countries/${code}/exchange`);
+}
+
+export async function getWikiSummary(code: string): Promise<WikiSummary> {
+  return fetchApi<WikiSummary>(`/api/countries/${code}/wiki`);
+}
+
+export async function getClimateInfo(code: string): Promise<ClimateInfo> {
+  return fetchApi<ClimateInfo>(`/api/countries/${code}/climate`);
+}
+
+export async function getEconomicInfo(code: string): Promise<EconomicInfo> {
+  return fetchApi<EconomicInfo>(`/api/countries/${code}/economic`);
 }

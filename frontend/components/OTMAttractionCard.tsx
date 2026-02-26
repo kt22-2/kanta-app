@@ -17,7 +17,7 @@ export default function OTMAttractionCard({ attraction }: Props) {
     : null;
 
   return (
-    <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-4">
+    <div className="rounded-xl glass-card p-4">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-sm text-[#F5F5F0]">{attraction.name}</h3>
         {attraction.category && (

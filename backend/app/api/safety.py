@@ -30,6 +30,9 @@ async def get_safety_info(code: str):
             "summary": LEVEL_SUMMARIES[1],
             "details": [],
             "last_updated": None,
+            "mofa_url": None,
+            "infection_level": 0,
+            "safety_measure_url": None,
         }
 
     mofa_result = dict(mofa_result)

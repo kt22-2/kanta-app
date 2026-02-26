@@ -42,7 +42,16 @@
       "Bash(wsl ip:*)",
       "Bash(wsl netstat:*)",
       "Bash(wsl:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npm)",
+      "Bash(where node)",
+      "Bash(where bash)",
+      "Bash(npm install recharts)",
+      "Bash(npm run build)",
+      "Bash(npm test -- --watchAll=false)",
+      "WebFetch(domain:whc.unesco.org)",
+      "WebFetch(domain:query.wikidata.org)"
     ]
   }
 }

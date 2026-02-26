@@ -27,8 +27,14 @@ LEVEL_SUMMARIES = {
     4: "退避してください。この国への渡航は止め、現地に滞在中の方は速やかに退避してください。",
 }
 
-# ISO 2文字コード → 外務省XMLオープンデータ用電話コード（4桁ゼロパディング）
-# 一部は外務省独自コード
+# 広域情報のtypeCdカテゴリマッピング
+WIDEAREA_CATEGORIES = {
+    "C50": "テロ情報",
+    "C51": "感染症情報",
+    "C52": "広域情報",
+}
+
+# ISO 2文字コード → 外務省XMLオープンデータ用コード（4桁ゼロパディング）
 ISO_TO_MOFA_XML: dict[str, str] = {
     # アジア・太平洋
     "IN": "0091", "ID": "0062", "KH": "0855", "LK": "0094",
@@ -48,7 +54,7 @@ ISO_TO_MOFA_XML: dict[str, str] = {
     "AT": "0043", "SE": "0046", "NO": "0047", "DK": "0045",
     "FI": "0358", "PL": "0048", "CZ": "0420", "HU": "0036",
     "RO": "0040", "GR": "0030", "PT": "0351",
-    "RU": "9007",  # 外務省独自コード
+    "RU": "9007",
     "UA": "0380", "BY": "0375", "MD": "0373",
     "LT": "0370", "LV": "0371", "EE": "0372",
     "RS": "0381", "HR": "0385", "SI": "0386", "BA": "0387",
@@ -56,10 +62,10 @@ ISO_TO_MOFA_XML: dict[str, str] = {
     # 中央アジア
     "TJ": "0992", "TM": "0993", "AZ": "0994", "GE": "0995",
     "KG": "0996", "UZ": "0998", "KZ": "0007", "AM": "0374",
-    "XK": "0383",  # コソボ
+    "XK": "0383",
     # 南北アメリカ
-    "US": "1000",  # 外務省独自コード（本土）
-    "CA": "9001",  # 外務省独自コード
+    "US": "1000",
+    "CA": "9001",
     "MX": "0052", "BR": "0055", "AR": "0054", "CL": "0056",
     "CO": "0057", "PE": "0051", "VE": "0058", "EC": "0593",
     "BO": "0591", "PY": "0595", "UY": "0598",
@@ -90,29 +96,132 @@ CACHE_TTL = 6 * 3600  # 6時間
 _cache: dict[str, tuple[dict, float]] = {}
 
 
-def _parse_xml(xml_bytes: bytes) -> tuple[int, str]:
-    """外務省XMLオープンデータから最高危険レベルとサマリーを抽出する。
-    XML構造: <riskLevel4>1/0</riskLevel4>, <riskLevel3>1/0</riskLevel3>, ...
-    """
+def _get_text(root: ET.Element, tag: str) -> str:
+    """XMLタグのテキストを安全に取得する"""
+    el = root.find(tag)
+    return el.text.strip() if el is not None and el.text else ""
+
+
+def _parse_xml(xml_bytes: bytes) -> dict:
+    """外務省XMLオープンデータから安全情報を詳細に抽出する。"""
     try:
         root = ET.fromstring(xml_bytes)
     except ET.ParseError:
-        return 1, LEVEL_SUMMARIES[1]
+        return {
+            "level": 1, "summary": LEVEL_SUMMARIES[1],
+            "details": [], "mofa_url": None,
+            "infection_level": 0, "safety_measure_url": None,
+        }
 
+    # --- 危険レベル ---
+    level = 0
     for lvl in [4, 3, 2, 1]:
         el = root.find(f"riskLevel{lvl}")
         if el is not None and (el.text or "").strip() == "1":
-            title_el = root.find("riskTitle")
-            lead_el = root.find("riskLead")
-            parts = []
-            if title_el is not None and title_el.text:
-                parts.append(title_el.text.strip())
-            if lead_el is not None and lead_el.text:
-                parts.append(lead_el.text.strip()[:150])
-            summary = "。".join(parts) if parts else LEVEL_SUMMARIES[lvl]
-            return lvl, summary[:200]
+            level = lvl
+            break
 
-    return 0, LEVEL_SUMMARIES[0]
+    # --- サマリー ---
+    title = _get_text(root, "riskTitle")
+    lead = _get_text(root, "riskLead")
+    parts = []
+    if title:
+        parts.append(title)
+    if lead:
+        parts.append(lead[:200])
+    summary = "。".join(parts) if parts else LEVEL_SUMMARIES[level]
+
+    # --- 外務省ページURL ---
+    mofa_url = _get_text(root, "riskUrl") or None
+
+    # --- 安全対策ページURL ---
+    safety_measure_url = _get_text(root, "safetyMeasureUrl") or None
+
+    # --- 感染症レベル ---
+    infection_level = 0
+    for lvl in [4, 3, 2, 1]:
+        el = root.find(f"infectionLevel{lvl}")
+        if el is not None and (el.text or "").strip() == "1":
+            infection_level = lvl
+            break
+
+    # --- details 配列構築 ---
+    details: list[dict] = []
+
+    # 危険情報メイン
+    if level > 0 and summary:
+        details.append({
+            "category": "外務省危険情報",
+            "description": summary[:300],
+            "severity": _level_to_severity(level),
+        })
+
+    # 感染症情報
+    if infection_level > 0:
+        desc = f"感染症危険レベル{infection_level}が発出されています。"
+        details.append({
+            "category": "感染症情報",
+            "description": desc,
+            "severity": _level_to_severity(infection_level),
+        })
+
+    # 広域情報（テロ・感染症等）― タイトル重複を排除
+    seen_titles: set[str] = set()
+    for spot in root.findall(".//wideareaSpot"):
+        type_cd = _get_text(spot, "typeCd")
+        spot_title = _get_text(spot, "title")
+        spot_lead = _get_text(spot, "lead")
+        if not spot_title or spot_title in seen_titles:
+            continue
+        seen_titles.add(spot_title)
+        category = WIDEAREA_CATEGORIES.get(type_cd, "広域情報")
+        desc = spot_title
+        if spot_lead:
+            desc += f"。{spot_lead[:150]}"
+        details.append({
+            "category": category,
+            "description": desc[:300],
+            "severity": "medium",
+        })
+        if len(details) >= 8:
+            break
+
+    # 領事メール（最新3件）― タイトル重複を排除
+    mails = root.findall(".//mail")
+    for mail in mails[:6]:
+        mail_title = _get_text(mail, "title")
+        mail_lead = _get_text(mail, "lead")
+        mail_date = _get_text(mail, "leaveDate")
+        if not mail_title or mail_title in seen_titles:
+            continue
+        seen_titles.add(mail_title)
+        desc = mail_title
+        if mail_lead:
+            desc += f"。{mail_lead[:150]}"
+        if mail_date:
+            desc = f"[{mail_date[:10]}] {desc}"
+        details.append({
+            "category": "領事メール",
+            "description": desc[:300],
+            "severity": "low",
+        })
+
+    # レベル0で details が空の場合
+    if not details:
+        details.append({
+            "category": "外務省危険情報",
+            "description": LEVEL_SUMMARIES[level],
+            "severity": "low",
+        })
+
+    return {
+        "level": level,
+        "summary": summary[:300],
+        "details": details,
+        "mofa_url": mofa_url,
+        "infection_level": infection_level,
+        "safety_measure_url": safety_measure_url,
+    }
 
 
 async def _fetch_xml(mofa_code: str) -> bytes | None:
@@ -134,7 +243,6 @@ class MofaSafetyService:
         code = country_code.upper()
         now = time.monotonic()
 
-        # キャッシュヒット確認
         if code in _cache:
             cached_data, cached_at = _cache[code]
             if now - cached_at < CACHE_TTL:
@@ -142,7 +250,6 @@ class MofaSafetyService:
 
         mofa_code = ISO_TO_MOFA_XML.get(code)
         if mofa_code is None:
-            # マッピングなし → レベル0（危険情報なし）
             result = _build_response(code, 0, LEVEL_SUMMARIES[0])
         else:
             try:
@@ -150,8 +257,18 @@ class MofaSafetyService:
                 if xml_bytes is None:
                     result = _build_response(code, 0, LEVEL_SUMMARIES[0])
                 else:
-                    level, summary = _parse_xml(xml_bytes)
-                    result = _build_response(code, level, summary)
+                    parsed = _parse_xml(xml_bytes)
+                    result = {
+                        "country_code": code,
+                        "level": parsed["level"],
+                        "level_label": LEVEL_LABELS.get(parsed["level"], "不明"),
+                        "summary": parsed["summary"],
+                        "details": parsed["details"],
+                        "last_updated": None,
+                        "mofa_url": parsed["mofa_url"],
+                        "infection_level": parsed["infection_level"],
+                        "safety_measure_url": parsed["safety_measure_url"],
+                    }
             except Exception:
                 result = _build_response(code, 1, LEVEL_SUMMARIES[1])
 
@@ -160,7 +277,7 @@ class MofaSafetyService:
 
 
 def _build_response(code: str, level: int, summary: str) -> dict:
-    """SafetyInfoレスポンス辞書を構築する"""
+    """SafetyInfoレスポンス辞書を構築する（フォールバック用）"""
     details = [
         {
             "category": "外務省危険情報",
@@ -175,6 +292,9 @@ def _build_response(code: str, level: int, summary: str) -> dict:
         "summary": summary,
         "details": details,
         "last_updated": None,
+        "mofa_url": None,
+        "infection_level": 0,
+        "safety_measure_url": None,
     }
 
 

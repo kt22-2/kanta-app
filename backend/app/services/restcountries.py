@@ -164,6 +164,7 @@ def _parse_country(raw: dict) -> dict:
         "flag_emoji": raw.get("flag", ""),
         "latitude": latlng[0] if len(latlng) > 0 else None,
         "longitude": latlng[1] if len(latlng) > 1 else None,
+        "borders": raw.get("borders", []),
         "timezones": raw.get("timezones", []),
     }
 
@@ -210,7 +211,7 @@ class RestCountriesService:
             try:
                 resp = await client.get(
                     f"{self.base_url}/alpha/{code}",
-                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng"},
+                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng,borders,timezones"},
                 )
                 if resp.status_code == 404:
                     return None

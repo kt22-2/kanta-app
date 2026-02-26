@@ -19,6 +19,8 @@ export interface Country {
   latitude?: number;
   longitude?: number;
   timezones?: string[];
+  safety_level?: number | null;
+  borders?: string[];
 }
 
 export type SafetyLevel = 0 | 1 | 2 | 3 | 4;
@@ -36,6 +38,9 @@ export interface SafetyInfo {
   summary: string;
   details: SafetyDetail[];
   last_updated?: string;
+  mofa_url?: string;
+  infection_level?: number;
+  safety_measure_url?: string;
 }
 
 export interface EntryRequirement {
@@ -86,11 +91,63 @@ export interface OTMAttraction {
   wikipedia_url: string | null;
 }
 
+export interface HeritageSite {
+  name: string;
+  description: string | null;
+  registered_year: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  image_url: string | null;
+  wikipedia_url: string | null;
+}
+
 export interface EnrichedAttractionsResponse {
   country_code: string;
   country_name: string;
+  heritage_sites: HeritageSite[];
   otm_attractions: OTMAttraction[];
   ai_summary: Attraction[];
   best_season: string | null;
   travel_tips: string[];
+}
+
+export interface ExchangeRate {
+  currency_code: string;
+  rate: number;
+}
+
+export interface ExchangeInfo {
+  country_code: string;
+  base: string;
+  rates: ExchangeRate[];
+  date: string | null;
+  available: boolean;
+}
+
+export interface WikiSummary {
+  country_code: string;
+  title: string;
+  summary: string;
+  url: string | null;
+  available: boolean;
+}
+
+export interface MonthlyClimate {
+  month: number;
+  temp_max: number | null;
+  temp_min: number | null;
+  precipitation: number | null;
+}
+
+export interface ClimateInfo {
+  country_code: string;
+  monthly: MonthlyClimate[];
+  available: boolean;
+}
+
+export interface EconomicInfo {
+  country_code: string;
+  gdp_per_capita: number | null;
+  gdp_year: number | null;
+  available: boolean;
 }

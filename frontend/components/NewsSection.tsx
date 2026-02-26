@@ -10,11 +10,12 @@ interface Props {
 
 function Skeleton() {
   return (
-    <div className="space-y-3">
-      {[...Array(3)].map((_, i) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {[...Array(4)].map((_, i) => (
         <div
           key={i}
-          className="h-24 animate-pulse rounded-xl bg-[#1C2D3E]"
+          className="h-24 shimmer rounded-xl"
+          style={{ animationDelay: `${i * 0.1}s` }}
         />
       ))}
     </div>
@@ -46,7 +47,7 @@ export default function NewsSection({ code }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {data.articles.slice(0, 10).map((article, i) => (
         <NewsCard key={i} article={article} />
       ))}

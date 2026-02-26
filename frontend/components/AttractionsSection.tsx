@@ -1,68 +1,23 @@
 "use client";
 
 import useSWR from "swr";
-import { Star, Calendar, Lightbulb } from "lucide-react";
+import { Star, Calendar, Lightbulb, Globe } from "lucide-react";
 import { getAttractions } from "@/lib/api";
 import OTMAttractionCard from "./OTMAttractionCard";
-import type { Attraction } from "@/lib/types";
+import HeritageSiteCard from "./HeritageSiteCard";
 
 interface Props {
   code: string;
 }
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  自然: "\u{1F3D4}\uFE0F",
-  文化: "\u{1F3DB}\uFE0F",
-  歴史: "\u{1F3F0}",
-  食: "\u{1F35C}",
-  アドベンチャー: "\u{1F9D7}",
-  都市: "\u{1F306}",
-  宗教: "\u26E9\uFE0F",
-  世界遺産: "\u{1F30D}",
-};
-
-function AttractionCard({ attraction }: { attraction: Attraction }) {
-  return (
-    <div className="rounded-xl border border-[#1C2D3E] bg-[#1C2D3E] p-4">
-      <div className="flex items-start gap-3 mb-2">
-        <span className="text-2xl">
-          {CATEGORY_EMOJI[attraction.category] ?? "\u{1F4CD}"}
-        </span>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-bold text-[#F5F5F0]">{attraction.name}</h3>
-            <span className="text-xs border border-[#C8A96E]/30 text-[#C8A96E] rounded-full px-2 py-0.5">
-              {attraction.category}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-[#8899AA] leading-relaxed">
-            {attraction.description}
-          </p>
-        </div>
-      </div>
-      {attraction.highlights.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {attraction.highlights.map((h, j) => (
-            <span
-              key={j}
-              className="text-xs bg-[#0F1923] text-[#8899AA] rounded px-2 py-0.5"
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function Skeleton() {
   return (
-    <div className="space-y-3">
-      {[...Array(3)].map((_, i) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {[...Array(4)].map((_, i) => (
         <div
           key={i}
-          className="h-32 animate-pulse rounded-xl bg-[#1C2D3E]"
+          className="h-32 shimmer rounded-xl"
+          style={{ animationDelay: `${i * 0.1}s` }}
         />
       ))}
     </div>
@@ -100,29 +55,33 @@ export default function AttractionsSection({ code }: Props) {
         </div>
       )}
 
-      {/* OTM観光スポット */}
-      {data.otm_attractions && data.otm_attractions.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Star className="h-4 w-4 text-[#C8A96E]" />
-            観光スポット
+      {/* 世界遺産 */}
+      {data.heritage_sites && data.heritage_sites.length > 0 && (
+        <div>
+          <h3 className="mb-3 font-bold text-[#F5F5F0] flex items-center gap-2">
+            <Globe className="h-4 w-4 text-[#C8A96E]" />
+            世界遺産（{data.heritage_sites.length}件）
           </h3>
-          {data.otm_attractions.slice(0, 10).map((a, i) => (
-            <OTMAttractionCard key={i} attraction={a} />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {data.heritage_sites.map((site, i) => (
+              <HeritageSiteCard key={i} site={site} />
+            ))}
+          </div>
         </div>
       )}
 
-      {/* AI サマリー */}
-      {data.ai_summary && data.ai_summary.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-[#F5F5F0] flex items-center gap-2">
+      {/* OTM観光スポット */}
+      {data.otm_attractions && data.otm_attractions.length > 0 && (
+        <div>
+          <h3 className="mb-3 font-bold text-[#F5F5F0] flex items-center gap-2">
             <Star className="h-4 w-4 text-[#C8A96E]" />
-            AIおすすめスポット
+            観光スポット
           </h3>
-          {data.ai_summary.map((a, i) => (
-            <AttractionCard key={i} attraction={a} />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {data.otm_attractions.slice(0, 10).map((a, i) => (
+              <OTMAttractionCard key={i} attraction={a} />
+            ))}
+          </div>
         </div>
       )}
 

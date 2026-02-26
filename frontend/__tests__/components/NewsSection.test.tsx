@@ -13,7 +13,7 @@ describe("NewsSection", () => {
   it("ローディング中はスケルトンを表示する", () => {
     mockUseSWR.mockReturnValue({ data: undefined, error: undefined, isLoading: true });
     const { container } = render(<NewsSection code="JP" />);
-    const skeletons = container.querySelectorAll(".animate-pulse");
+    const skeletons = container.querySelectorAll(".shimmer");
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

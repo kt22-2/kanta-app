@@ -13,7 +13,7 @@ interface Props {
 
 export default function SectionAnchor({ sections }: Props) {
   const [activeId, setActiveId] = useState<string>(sections[0]?.id ?? "");
-  const navRef = useRef<HTMLNavElement>(null);
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -52,20 +52,29 @@ export default function SectionAnchor({ sections }: Props) {
   return (
     <nav
       ref={navRef}
-      className="sticky top-0 z-40 -mx-4 mb-6 overflow-x-auto border-b border-[#1C2D3E] bg-[#1C2D3E]/90 px-4 backdrop-blur-sm"
+      className="sticky top-14 z-40 -mx-4 mb-6 overflow-x-auto border-b border-white/[0.06] bg-[#0F1923]/80 px-4 backdrop-blur-xl shadow-[0_1px_0_rgba(200,169,110,0.06)]"
     >
       <div className="flex gap-1 py-2">
         {sections.map((section) => (
           <button
             key={section.id}
             onClick={() => handleClick(section.id)}
-            className={`shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`relative shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               activeId === section.id
                 ? "text-[#C8A96E]"
                 : "text-[#8899AA] hover:text-[#F5F5F0]"
             }`}
           >
             {section.label}
+            {activeId === section.id && (
+              <span
+                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full origin-left"
+                style={{
+                  background: "linear-gradient(90deg, #C8A96E, #E8C980)",
+                  animation: "slideIn 0.2s ease-out both",
+                }}
+              />
+            )}
           </button>
         ))}
       </div>
