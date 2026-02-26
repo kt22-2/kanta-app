@@ -211,7 +211,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
             desc = desc[:300]
         details.append({
             "category": "領事メール",
-            "description": desc[:300],
+            "description": desc,
             "severity": "low",
         })
 
