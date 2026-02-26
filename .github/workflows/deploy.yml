@@ -1,24 +1,72 @@
-name: Deploy to OCI
+name: Deploy to Cloud Run
 
 on:
   push:
     branches: [main]
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  AR_REPO: ${{ secrets.AR_REPO }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          host: ${{ secrets.OCI_HOST }}
-          username: ${{ secrets.OCI_USER }}
-          key: ${{ secrets.OCI_SSH_KEY }}
-          script_stop: true
-          command_timeout: 12m
-          script: |
-            cd ~/app
-            git pull origin main
-            docker compose up -d --build
-            docker image prune -f
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # ── Backend ──────────────────────────────────────────
+      - name: Build and push backend image
+        run: |
+          docker build \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }} \
+            -f Dockerfiles/backend.Dockerfile \
+            ./backend
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }}
+
+      - name: Deploy backend to Cloud Run
+        id: backend
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: kanta-backend
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }}
+          region: ${{ env.REGION }}
+          flags: --allow-unauthenticated --port=8000
+          env_vars: |
+            CORS_ORIGINS=https://kanta.yurudev.tech
+            RESTCOUNTRIES_BASE_URL=https://restcountries.com/v3.1
+            CACHE_TTL_HOURS=24
+          secrets: |
+            ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest
+            GNEWS_API_KEY=GNEWS_API_KEY:latest
+            OTM_API_KEY=OTM_API_KEY:latest
+
+      # ── Frontend ─────────────────────────────────────────
+      - name: Build and push frontend image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=${{ steps.backend.outputs.url }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }} \
+            -f Dockerfiles/frontend.Dockerfile \
+            ./frontend
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}
+
+      - name: Deploy frontend to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: kanta-frontend
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}
+          region: ${{ env.REGION }}
+          flags: --allow-unauthenticated --port=3000
