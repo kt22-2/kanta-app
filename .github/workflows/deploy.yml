@@ -50,7 +50,7 @@ jobs:
           region: ${{ env.REGION }}
           flags: --allow-unauthenticated --port=8000
           env_vars: |
-            CORS_ORIGINS=https://kanta.yurudev.tech
+            CORS_ORIGINS=https://kanta.yurudev.tech,https://kanta-frontend-965910808214.asia-northeast1.run.app
             RESTCOUNTRIES_BASE_URL=https://restcountries.com/v3.1
             CACHE_TTL_HOURS=24
           secrets: |
@@ -75,4 +75,6 @@ jobs:
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}
           region: ${{ env.REGION }}
           flags: --allow-unauthenticated --port=3000
+          env_vars: |
+            NEXT_PUBLIC_API_URL=${{ steps.backend.outputs.url }}
 
