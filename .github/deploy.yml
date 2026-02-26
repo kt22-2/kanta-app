@@ -1,0 +1,38 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            cd ~/app
+
+            # 最新コードを取得
+            git pull origin main
+
+            # バックエンド更新
+            cd backend
+            source venv/bin/activate
+            pip install -r requirements.txt
+            deactivate
+
+            # フロントエンド更新
+            cd ../frontend
+            npm install
+            npm run build
+
+            # サービス再起動
+            sudo systemctl restart fastapi
+            sudo systemctl restart nextjs
