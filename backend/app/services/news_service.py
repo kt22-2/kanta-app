@@ -6,9 +6,8 @@ import xml.etree.ElementTree as ET
 from typing import Any
 from urllib.parse import quote
 
-import httpx
-
 from app.core.config import settings
+from app.core.http_client import get_http_client
 
 # インメモリキャッシュ（30分）
 _news_cache: dict[str, tuple[Any, float]] = {}
@@ -104,18 +103,18 @@ class NewsService:
         safety_terms = " OR ".join(_SAFETY_KEYWORDS_EN[:12])
         query = f'"{country_name}" ({safety_terms})'
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(
-                self.GNEWS_URL,
-                params={
-                    "q": query,
-                    "lang": lang,
-                    "max": max_results,
-                    "apikey": settings.gnews_api_key,
-                },
-            )
-            resp.raise_for_status()
-            raw = resp.json()
+        client = get_http_client()
+        resp = await client.get(
+            self.GNEWS_URL,
+            params={
+                "q": query,
+                "lang": lang,
+                "max": max_results,
+                "apikey": settings.gnews_api_key,
+            },
+        )
+        resp.raise_for_status()
+        raw = resp.json()
 
         articles = []
         for article in raw.get("articles", []):
@@ -139,9 +138,9 @@ class NewsService:
         query = quote(f'"{country_name}" ({safety_q})')
         url = f"{self.RSS_URL}?q={query}&hl=en&gl=US&ceid=US:en"
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(url, follow_redirects=True)
-            resp.raise_for_status()
+        client = get_http_client()
+        resp = await client.get(url, follow_redirects=True)
+        resp.raise_for_status()
 
         root = ET.fromstring(resp.text)
 

@@ -107,7 +107,7 @@ class AIService:
         if self._client is None and settings.anthropic_api_key:
             try:
                 import anthropic
-                self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+                self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
             except Exception:
                 self._client = None
         return self._client
@@ -157,7 +157,7 @@ class AIService:
 観光スポットは5〜8か所を厳選してください。特に冒険心のある30代男性が興味を持つようなスポットを含めてください。"""
 
         try:
-            message = self.client.messages.create(
+            message = await self.client.messages.create(
                 model="claude-3-5-sonnet-20241022",
                 max_tokens=2000,
                 messages=[{"role": "user", "content": prompt}],

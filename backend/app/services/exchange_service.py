@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
+from app.core.http_client import get_http_client
 
 _cache: dict[str, tuple[Any, float]] = {}
 _TTL = 3600  # 1時間
@@ -29,13 +29,13 @@ class ExchangeService:
 
         symbols = ",".join(non_jpy)
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.get(
-                    f"{self.BASE_URL}/latest",
-                    params={"base": "JPY", "symbols": symbols},
-                )
-                resp.raise_for_status()
-                raw = resp.json()
+            client = get_http_client()
+            resp = await client.get(
+                f"{self.BASE_URL}/latest",
+                params={"base": "JPY", "symbols": symbols},
+            )
+            resp.raise_for_status()
+            raw = resp.json()
         except Exception:
             return {"country_code": country_code, "base": "JPY", "rates": [], "date": None, "available": False}
 
@@ -58,13 +58,13 @@ class ExchangeService:
             if time.time() - ts < _TTL:
                 return {**data, "country_code": country_code}
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.get(
-                    f"{self.BASE_URL}/latest",
-                    params={"base": "USD", "symbols": "JPY"},
-                )
-                resp.raise_for_status()
-                raw = resp.json()
+            client = get_http_client()
+            resp = await client.get(
+                f"{self.BASE_URL}/latest",
+                params={"base": "USD", "symbols": "JPY"},
+            )
+            resp.raise_for_status()
+            raw = resp.json()
             jpy_rate = raw.get("rates", {}).get("JPY")
             if jpy_rate is None:
                 return {"country_code": country_code, "base": "USD", "rates": [], "date": None, "available": False}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
+from app.core.http_client import get_http_client
 
 # インメモリキャッシュ（6時間）
 _state_cache: dict[str, tuple[Any, float]] = {}
@@ -63,10 +63,10 @@ class StateDeptService:
             if not _is_expired(ts):
                 return data
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(DATA_URL)
-            resp.raise_for_status()
-            raw = resp.json()
+        client = get_http_client()
+        resp = await client.get(DATA_URL)
+        resp.raise_for_status()
+        raw = resp.json()
 
         advisories = raw if isinstance(raw, list) else raw.get("data", [])
         _state_cache[cache_key] = (advisories, time.time())

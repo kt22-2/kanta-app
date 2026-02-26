@@ -3,9 +3,8 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
-
 from app.core.config import settings
+from app.core.http_client import get_http_client
 
 # インメモリキャッシュ（24時間）
 _heritage_cache: dict[str, tuple[Any, float]] = {}
@@ -20,7 +19,7 @@ class HeritageService:
     _HEADERS = {"User-Agent": "kanta-app/1.0 (https://github.com/kanta-app)"}
 
     async def _get_category_members(
-        self, category: str, client: httpx.AsyncClient
+        self, category: str, client=None
     ) -> list[str]:
         """Wikipedia カテゴリに属するページタイトルを取得する。"""
         resp = await client.get(
@@ -34,6 +33,7 @@ class HeritageService:
                 "cmnamespace": "0",
                 "format": "json",
             },
+            headers=self._HEADERS,
         )
         raw = resp.json()
         members = raw.get("query", {}).get("categorymembers", [])
@@ -45,7 +45,7 @@ class HeritageService:
         ]
 
     async def _get_page_details(
-        self, titles: list[str], client: httpx.AsyncClient
+        self, titles: list[str], client=None
     ) -> list[dict]:
         """ページの座標・説明・URL を一括取得する。"""
         if not titles:
@@ -64,6 +64,7 @@ class HeritageService:
                 "format": "json",
                 "redirects": "1",
             },
+            headers=self._HEADERS,
         )
         raw = resp.json()
         pages = raw.get("query", {}).get("pages", {})
@@ -120,22 +121,20 @@ class HeritageService:
         ]
 
         try:
-            async with httpx.AsyncClient(
-                timeout=15.0, headers=self._HEADERS
-            ) as client:
-                titles: list[str] = []
-                for cat in candidates:
-                    titles = await self._get_category_members(cat, client)
-                    if titles:
-                        break
+            client = get_http_client()
+            titles: list[str] = []
+            for cat in candidates:
+                titles = await self._get_category_members(cat, client)
+                if titles:
+                    break
 
-                if not titles:
-                    _heritage_cache[cache_key] = ([], time.time())
-                    return []
+            if not titles:
+                _heritage_cache[cache_key] = ([], time.time())
+                return []
 
-                sites = await self._get_page_details(titles, client)
-                _heritage_cache[cache_key] = (sites, time.time())
-                return sites
+            sites = await self._get_page_details(titles, client)
+            _heritage_cache[cache_key] = (sites, time.time())
+            return sites
 
         except Exception:
             return []

@@ -7,7 +7,7 @@ from __future__ import annotations
 import time
 import xml.etree.ElementTree as ET
 
-import httpx
+from app.core.http_client import get_http_client
 
 # 危険レベルラベル
 LEVEL_LABELS = {
@@ -227,13 +227,13 @@ def _parse_xml(xml_bytes: bytes) -> dict:
 async def _fetch_xml(mofa_code: str) -> bytes | None:
     """外務省XMLオープンデータを取得する。HTMLが返った場合はNone（安全国）。"""
     url = MOFA_XML_BASE_URL.format(code=mofa_code)
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        resp = await client.get(url, follow_redirects=True)
-        resp.raise_for_status()
-        content_type = resp.headers.get("content-type", "")
-        if "text/html" in content_type:
-            return None  # XMLなし → 安全国
-        return resp.content
+    client = get_http_client()
+    resp = await client.get(url, follow_redirects=True)
+    resp.raise_for_status()
+    content_type = resp.headers.get("content-type", "")
+    if "text/html" in content_type:
+        return None  # XMLなし → 安全国
+    return resp.content
 
 
 class MofaSafetyService:

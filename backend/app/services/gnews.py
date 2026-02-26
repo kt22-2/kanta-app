@@ -5,9 +5,8 @@ import time
 import xml.etree.ElementTree as ET
 from typing import Any
 
-import httpx
-
 from app.core.config import settings
+from app.core.http_client import get_http_client
 
 _GNEWS_BASE = "https://gnews.io/api/v4"
 _GOOGLE_NEWS_RSS = "https://news.google.com/rss/search"
@@ -47,24 +46,24 @@ class GNewsService:
         """GNews APIからニュース記事を取得する。"""
         for lang in ("ja", "en"):
             try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.get(
-                        f"{_GNEWS_BASE}/search",
-                        params={
-                            "q": country_name,
-                            "lang": lang,
-                            "max": min(max_results, 10),
-                            "apikey": settings.gnews_api_key,
-                            "sortby": "publishedAt",
-                        },
-                    )
-                    if resp.status_code == 403:
-                        break
-                    resp.raise_for_status()
-                    data = resp.json()
-                    raw_articles = data.get("articles", [])
-                    if raw_articles:
-                        return [_parse_gnews_article(a) for a in raw_articles]
+                client = get_http_client()
+                resp = await client.get(
+                    f"{_GNEWS_BASE}/search",
+                    params={
+                        "q": country_name,
+                        "lang": lang,
+                        "max": min(max_results, 10),
+                        "apikey": settings.gnews_api_key,
+                        "sortby": "publishedAt",
+                    },
+                )
+                if resp.status_code == 403:
+                    break
+                resp.raise_for_status()
+                data = resp.json()
+                raw_articles = data.get("articles", [])
+                if raw_articles:
+                    return [_parse_gnews_article(a) for a in raw_articles]
             except Exception:
                 continue
         return []
@@ -96,17 +95,15 @@ class GNewsService:
         self, query: str, hl: str, gl: str, limit: int
     ) -> list[dict]:
         ceid = f"{gl}:{hl}"
-        async with httpx.AsyncClient(
-            timeout=10.0,
+        client = get_http_client()
+        resp = await client.get(
+            _GOOGLE_NEWS_RSS,
+            params={"q": query, "hl": hl, "gl": gl, "ceid": ceid},
             headers={"User-Agent": "Mozilla/5.0 (compatible; TravelApp/1.0)"},
             follow_redirects=True,
-        ) as client:
-            resp = await client.get(
-                _GOOGLE_NEWS_RSS,
-                params={"q": query, "hl": hl, "gl": gl, "ceid": ceid},
-            )
-            resp.raise_for_status()
-            return _parse_rss(resp.text, limit)
+        )
+        resp.raise_for_status()
+        return _parse_rss(resp.text, limit)
 
 
 def _parse_rss(xml_text: str, limit: int) -> list[dict]:

@@ -3,9 +3,8 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
-
 from app.core.config import settings
+from app.core.http_client import get_http_client
 
 # インメモリキャッシュ（24時間）
 _otm_cache: dict[str, tuple[Any, float]] = {}
@@ -72,22 +71,22 @@ class OpenTripMapService:
         search_lat, search_lon = _CAPITAL_COORDS.get(country_code.upper(), (lat, lon))
 
         try:
-            async with httpx.AsyncClient(timeout=20.0) as client:
-                resp = await client.get(
-                    f"{self.BASE_URL}/places/radius",
-                    params={
-                        "radius": 300000,  # 300km
-                        "lon": search_lon,
-                        "lat": search_lat,
-                        "kinds": "cultural,historic,natural,architecture,religion",
-                        "format": "json",
-                        "limit": 30,
-                        "rate": "3h",   # 評価3以上（高評価スポットのみ）
-                        "apikey": settings.otm_api_key,
-                    },
-                )
-                resp.raise_for_status()
-                raw_places = resp.json()
+            client = get_http_client()
+            resp = await client.get(
+                f"{self.BASE_URL}/places/radius",
+                params={
+                    "radius": 300000,  # 300km
+                    "lon": search_lon,
+                    "lat": search_lat,
+                    "kinds": "cultural,historic,natural,architecture,religion",
+                    "format": "json",
+                    "limit": 30,
+                    "rate": "3h",   # 評価3以上（高評価スポットのみ）
+                    "apikey": settings.otm_api_key,
+                },
+            )
+            resp.raise_for_status()
+            raw_places = resp.json()
 
             seen_names: set[str] = set()
             attractions = []

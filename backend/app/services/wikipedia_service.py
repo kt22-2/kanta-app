@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
+from app.core.http_client import get_http_client
 
 _cache: dict[str, tuple[Any, float]] = {}
 _TTL = 7 * 24 * 3600  # 7日間
@@ -40,10 +40,9 @@ class WikipediaService:
         }
         headers = {"User-Agent": "KantaTravelApp/1.0 (educational travel info app)"}
         try:
-            async with httpx.AsyncClient(timeout=10.0, headers=headers) as client:
-                resp = await client.get(api_url, params=params)
-                resp.raise_for_status()
-                data = resp.json()
+            client = get_http_client()
+            resp = await client.get(api_url, params=params, headers=headers)
+            data = resp.json()
 
             pages = data.get("query", {}).get("pages", {})
             page = next(iter(pages.values()), {})

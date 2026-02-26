@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
+from app.core.http_client import get_http_client
 
 _cache: dict[str, tuple[Any, float]] = {}
 _TTL = 30 * 24 * 3600  # 30日間（年間データは不変）
@@ -51,10 +51,10 @@ class ClimateService:
             "timezone": "auto",
         }
         try:
-            async with httpx.AsyncClient(timeout=20.0) as client:
-                resp = await client.get(self.BASE_URL, params=params)
-                resp.raise_for_status()
-                raw = resp.json()
+            client = get_http_client()
+            resp = await client.get(self.BASE_URL, params=params)
+            resp.raise_for_status()
+            raw = resp.json()
         except Exception:
             return {"country_code": country_code, "monthly": [], "available": False}
 

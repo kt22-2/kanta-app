@@ -26,11 +26,11 @@ MOCK_NEWS_RESPONSE = {
 def test_get_news_returns_200(client: TestClient):
     """GET /api/countries/{code}/news が200を返す"""
     with patch(
-        "app.api.news._news_svc.get_news",
+        "app.api.news._gnews_svc.get_news",
         new_callable=AsyncMock,
         return_value=MOCK_NEWS_RESPONSE,
     ), patch(
-        "app.api.news._country_svc.get_country",
+        "app.services.restcountries.RestCountriesService.get_country",
         new_callable=AsyncMock,
         return_value=MOCK_COUNTRY,
     ):
@@ -41,11 +41,11 @@ def test_get_news_returns_200(client: TestClient):
 def test_news_response_has_required_fields(client: TestClient):
     """レスポンスにcountry_code, articles, totalフィールドがある"""
     with patch(
-        "app.api.news._news_svc.get_news",
+        "app.api.news._gnews_svc.get_news",
         new_callable=AsyncMock,
         return_value=MOCK_NEWS_RESPONSE,
     ), patch(
-        "app.api.news._country_svc.get_country",
+        "app.services.restcountries.RestCountriesService.get_country",
         new_callable=AsyncMock,
         return_value=MOCK_COUNTRY,
     ):
@@ -59,11 +59,11 @@ def test_news_response_has_required_fields(client: TestClient):
 def test_news_articles_is_list(client: TestClient):
     """articlesが配列である"""
     with patch(
-        "app.api.news._news_svc.get_news",
+        "app.api.news._gnews_svc.get_news",
         new_callable=AsyncMock,
         return_value=MOCK_NEWS_RESPONSE,
     ), patch(
-        "app.api.news._country_svc.get_country",
+        "app.services.restcountries.RestCountriesService.get_country",
         new_callable=AsyncMock,
         return_value=MOCK_COUNTRY,
     ):
@@ -80,11 +80,11 @@ def test_news_empty_when_no_api_key(client: TestClient):
         "total": 0,
     }
     with patch(
-        "app.api.news._news_svc.get_news",
+        "app.api.news._gnews_svc.get_news",
         new_callable=AsyncMock,
         return_value=empty_response,
     ), patch(
-        "app.api.news._country_svc.get_country",
+        "app.services.restcountries.RestCountriesService.get_country",
         new_callable=AsyncMock,
         return_value=MOCK_COUNTRY,
     ):
@@ -137,11 +137,11 @@ def test_safety_filter_fallback_on_all_filtered(client: TestClient):
         "total": 1,
     }
     with patch(
-        "app.api.news._news_svc.get_news",
+        "app.api.news._gnews_svc.get_news",
         new_callable=AsyncMock,
         return_value=irrelevant_response,
     ), patch(
-        "app.api.news._country_svc.get_country",
+        "app.services.restcountries.RestCountriesService.get_country",
         new_callable=AsyncMock,
         return_value=MOCK_COUNTRY,
     ):

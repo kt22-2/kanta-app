@@ -3,9 +3,8 @@ from __future__ import annotations
 import time
 from typing import Any
 
-import httpx
-
 from app.core.config import settings
+from app.core.http_client import get_http_client
 
 # シンプルなインメモリキャッシュ
 _cache: dict[str, tuple[Any, float]] = {}
@@ -362,24 +361,24 @@ class RestCountriesService:
             if not _is_expired(ts):
                 return data
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            try:
-                resp = await client.get(
-                    f"{self.base_url}/alpha/{code}",
-                    params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng,borders,timezones"},
-                )
-                if resp.status_code == 404:
-                    return None
-                resp.raise_for_status()
-                raw = resp.json()
-                # APIは単一オブジェクトまたはリストで返すことがある
-                if isinstance(raw, list):
-                    raw = raw[0]
-                country = _parse_country(raw)
-                _cache[cache_key] = (country, time.time())
-                return country
-            except (httpx.HTTPStatusError, httpx.TimeoutException):
+        client = get_http_client()
+        try:
+            resp = await client.get(
+                f"{self.base_url}/alpha/{code}",
+                params={"fields": "name,cca2,flags,flag,capital,region,subregion,population,languages,currencies,latlng,borders,timezones"},
+            )
+            if resp.status_code == 404:
                 return None
+            resp.raise_for_status()
+            raw = resp.json()
+            # APIは単一オブジェクトまたはリストで返すことがある
+            if isinstance(raw, list):
+                raw = raw[0]
+            country = _parse_country(raw)
+            _cache[cache_key] = (country, time.time())
+            return country
+        except Exception:
+            return None
 
     async def get_coordinates(self, code: str) -> tuple[float, float] | None:
         """国コードから座標(lat, lng)を取得する。エラー時はNone。"""
@@ -390,10 +389,10 @@ class RestCountriesService:
         return None
 
     async def _fetch_all(self) -> list[dict]:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.get(
-                f"{self.base_url}/all",
-                params={"fields": "name,cca2,flags,capital,region,subregion,population,languages,currencies,latlng"},
-            )
-            resp.raise_for_status()
-            return [_parse_country(r) for r in resp.json()]
+        client = get_http_client()
+        resp = await client.get(
+            f"{self.base_url}/all",
+            params={"fields": "name,cca2,flags,capital,region,subregion,population,languages,currencies,latlng"},
+        )
+        resp.raise_for_status()
+        return [_parse_country(r) for r in resp.json()]

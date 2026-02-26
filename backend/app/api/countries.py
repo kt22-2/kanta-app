@@ -30,6 +30,7 @@ _safety_cache: dict[str, int | None] = {}
 _safety_cache_ts: float = 0.0
 _SAFETY_CACHE_TTL = 6 * 3600  # 6時間
 _safety_task: asyncio.Task | None = None  # バックグラウンドタスク
+_safety_lock = asyncio.Lock()  # 重複起動防止
 
 
 async def _warm_safety_cache(codes: list[str]) -> None:
@@ -65,9 +66,10 @@ async def list_countries(
             c["safety_level"] = _safety_cache.get(c["code"])
     else:
         # キャッシュなし/期限切れ: バックグラウンドで更新開始し、今は safety_level なしで返す
-        if _safety_task is None or _safety_task.done():
-            all_codes = [c["code"] for c in await _svc.get_all_countries()]
-            _safety_task = asyncio.create_task(_warm_safety_cache(all_codes))
+        async with _safety_lock:
+            if _safety_task is None or _safety_task.done():
+                all_codes = [c["code"] for c in await _svc.get_all_countries()]
+                _safety_task = asyncio.create_task(_warm_safety_cache(all_codes))
         # キャッシュに一部データがある場合はそれを使う
         for c in countries:
             c["safety_level"] = _safety_cache.get(c["code"])

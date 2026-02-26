@@ -97,8 +97,8 @@ class TestXmlParsing:
             "<riskTitle>\u30a6\u30af\u30e9\u30a4\u30ca\u306e\u5371\u967a\u60c5\u5831</riskTitle>"
             "<riskLead>\u5168\u571f\u306b\u9000\u907f\u52e7\u544a</riskLead></opendata>"
         ).encode("utf-8")
-        level, summary = _parse_xml(xml)
-        assert level == 4
+        result = _parse_xml(xml)
+        assert result["level"] == 4
 
     def test_xml_parse_level1(self):
         from app.services.mofa_service import _parse_xml
@@ -108,8 +108,8 @@ class TestXmlParsing:
             "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
             "<riskTitle>\u30ab\u30b6\u30d5\u30b9\u30bf\u30f3\u306e\u5371\u967a\u60c5\u5831</riskTitle></opendata>"
         ).encode("utf-8")
-        level, _ = _parse_xml(xml)
-        assert level == 1
+        result = _parse_xml(xml)
+        assert result["level"] == 1
 
     def test_xml_parse_level0(self):
         from app.services.mofa_service import _parse_xml
@@ -118,8 +118,8 @@ class TestXmlParsing:
             "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
             "<riskLevel2>0</riskLevel2><riskLevel1>0</riskLevel1></opendata>"
         ).encode("utf-8")
-        level, _ = _parse_xml(xml)
-        assert level == 0
+        result = _parse_xml(xml)
+        assert result["level"] == 0
 
     def test_xml_parse_highest_wins(self):
         from app.services.mofa_service import _parse_xml
@@ -129,8 +129,8 @@ class TestXmlParsing:
             "<riskLevel2>1</riskLevel2><riskLevel1>1</riskLevel1>"
             "<riskTitle>\u30bf\u30a4\u306e\u5371\u967a\u60c5\u5831</riskTitle></opendata>"
         ).encode("utf-8")
-        level, _ = _parse_xml(xml)
-        assert level == 3
+        result = _parse_xml(xml)
+        assert result["level"] == 3
 
 
 # ── State Dept 統合テスト ─────────────────────────────────────────
