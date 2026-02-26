@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { Star, Calendar, Lightbulb, Globe } from "lucide-react";
+import { Star, Calendar, Globe } from "lucide-react";
 import { getAttractions } from "@/lib/api";
 import OTMAttractionCard from "./OTMAttractionCard";
 import HeritageSiteCard from "./HeritageSiteCard";

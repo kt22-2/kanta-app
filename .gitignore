@@ -37,6 +37,11 @@ android/.idea/
 *.aab
 *.keystore
 
+# Claude / AI tools
+.claude/worktrees/
+.claude/settings.local.json
+.playwright-mcp/
+
 # OS
 .DS_Store
 Thumbs.db
