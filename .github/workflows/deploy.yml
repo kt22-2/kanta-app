@@ -75,3 +75,4 @@ jobs:
           image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}
           region: ${{ env.REGION }}
           flags: --allow-unauthenticated --port=3000
+
