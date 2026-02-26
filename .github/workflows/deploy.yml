@@ -2,13 +2,12 @@ name: Deploy to OCI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
@@ -17,6 +16,7 @@ jobs:
           username: ${{ secrets.OCI_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
           script_stop: true
+          command_timeout: 12m
           script: |
             cd ~/app
             git pull origin main
