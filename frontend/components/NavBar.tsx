@@ -22,6 +22,7 @@ export default function NavBar() {
 
   const navLinks = [
     { href: "/countries", label: "国一覧", match: (p: string) => p.startsWith("/countries") },
+    { href: "/journey", label: "KANTAの軌跡", match: (p: string) => p.startsWith("/journey") },
   ];
 
   return (

@@ -219,6 +219,17 @@ body {
   background-size: 32px 32px;
 }
 
+/* Leaflet ポップアップ ダークテーマ */
+.leaflet-popup-content-wrapper {
+  background: var(--color-surface) !important;
+  color: var(--color-foreground) !important;
+  border: 1px solid rgba(200, 169, 110, 0.3);
+  border-radius: 12px !important;
+}
+.leaflet-popup-tip {
+  background: var(--color-surface) !important;
+}
+
 /* フォーカスリング（アクセシビリティ） */
 :focus-visible {
   outline: 2px solid var(--accent);

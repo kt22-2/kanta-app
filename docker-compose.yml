@@ -1,6 +1,8 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfiles/backend.Dockerfile
     restart: unless-stopped
     env_file: .env
     networks:
@@ -9,6 +11,7 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: ../Dockerfiles/frontend.Dockerfile
       args:
         NEXT_PUBLIC_API_URL: http://backend:8000
     restart: unless-stopped

@@ -3,6 +3,7 @@ import { Compass, ExternalLink } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/countries", label: "国一覧" },
+  { href: "/journey", label: "KANTAの軌跡" },
   { href: "/countries?region=Asia", label: "アジア" },
   { href: "/countries?region=Europe", label: "ヨーロッパ" },
   { href: "/countries?region=Americas", label: "アメリカ" },

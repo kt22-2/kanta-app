@@ -54,7 +54,8 @@
       "WebFetch(domain:query.wikidata.org)",
       "Bash(git commit:*)",
       "Bash(docker compose images)",
-      "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.Size}}\")"
+      "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.Size}}\")",
+      "Bash(npx jest:*)"
     ]
   }
 }
