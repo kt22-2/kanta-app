@@ -55,6 +55,7 @@ async def _warm_safety_cache(codes: list[str]) -> None:
 async def list_countries(
     q: str | None = Query(None, description="国名またはコードで検索"),
     region: str | None = Query(None, description="地域フィルタ"),
+    safety_level: int | None = Query(None, description="危険度フィルタ (0-4)", ge=0, le=4),
 ):
     global _safety_task, _safety_cache_ts
 
@@ -73,6 +74,10 @@ async def list_countries(
         # キャッシュに一部データがある場合はそれを使う
         for c in countries:
             c["safety_level"] = _safety_cache.get(c["code"])
+
+    # 危険度フィルタを適用
+    if safety_level is not None:
+        countries = [c for c in countries if c.get("safety_level") == safety_level]
 
     return countries
 
