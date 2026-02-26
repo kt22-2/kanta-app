@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     otm_api_key: str = ""
     news_cache_ttl_minutes: int = 30
     cors_origins: str = "http://localhost:3000"
+    gnews_api_key: str = ""
+    otm_api_key: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:

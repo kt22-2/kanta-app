@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import NewsResponse
-from app.services.news_service import NewsService
+from app.services.gnews import GNewsService
 from app.services.restcountries import RestCountriesService
 
 router = APIRouter(prefix="/api/countries", tags=["news"])
-_news_svc = NewsService()
+_gnews_svc = GNewsService()
 _country_svc = RestCountriesService()
 
 
@@ -13,7 +13,7 @@ async def get_news(code: str):
     country = await _country_svc.get_country(code)
     if country is None:
         raise HTTPException(status_code=404, detail=f"国コード '{code}' は見つかりませんでした")
-    return await _news_svc.get_news(
+    return await _gnews_svc.get_news(
         country_code=country["code"],
         country_name=country["name"],
     )
