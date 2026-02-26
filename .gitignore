@@ -42,6 +42,11 @@ android/.idea/
 .claude/settings.local.json
 .playwright-mcp/
 
+# Windows reserved device names
+nul
+nul/
+**/nul
+
 # OS
 .DS_Store
 Thumbs.db
