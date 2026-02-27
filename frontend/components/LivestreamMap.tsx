@@ -32,12 +32,16 @@ export default function LivestreamMap({ points }: Props) {
         zoomControl: true,
         attributionControl: false,
         scrollWheelZoom: true,
+        worldCopyJump: false,
+        maxBounds: [[-90, -180], [90, 180]],
+        maxBoundsViscosity: 1.0,
+        minZoom: 2,
       }).setView([20, 0], 2);
 
       // CartoDB Positron タイル（明るいマップ）
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        { subdomains: "abcd" }
+        { subdomains: "abcd", noWrap: true }
       ).addTo(map);
 
       // ポリライン（金色破線で全ポイントを結ぶ）
