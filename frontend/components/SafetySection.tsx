@@ -9,6 +9,7 @@ import {
 import type { SafetyInfo, SafetyLevel } from "@/lib/types";
 import { getSafetyColor } from "@/lib/utils";
 import SafetyBadge from "./SafetyBadge";
+import ExpandableDetailCard from "./ExpandableDetailCard";
 
 interface Props {
   safety: SafetyInfo | null;
@@ -113,17 +114,13 @@ export default function SafetySection({ safety }: Props) {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {safety.details.filter(d => d.category !== "領事メール").map((detail, i) => (
-                  <div key={i} className="rounded-xl glass-card p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-sm text-foreground">
-                        {detail.category}
-                      </span>
-                      <span className={`text-xs font-medium ${severityColors[detail.severity] ?? "text-muted"}`}>
-                        {detail.severity === "low" ? "低" : detail.severity === "medium" ? "中" : "高"}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted leading-relaxed">{detail.description}</p>
-                  </div>
+                  <ExpandableDetailCard
+                    key={i}
+                    category={detail.category}
+                    severityLabel={detail.severity === "low" ? "低" : detail.severity === "medium" ? "中" : "高"}
+                    severityColor={severityColors[detail.severity] ?? "text-muted"}
+                    description={detail.description}
+                  />
                 ))}
               </div>
             </div>

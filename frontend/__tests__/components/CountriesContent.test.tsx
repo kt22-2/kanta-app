@@ -118,15 +118,31 @@ describe("CountriesContent", () => {
   });
 
   it("危険度フィルタで絞り込みができる", () => {
+    // 初期状態: すべての国を表示
     const countriesWithSafety: Country[] = [
       { ...mockCountries[0], safety_level: 0 }, // 日本: 安全
       { ...mockCountries[1], safety_level: 2 }, // フランス: 危険
     ];
     mockUseSWR.mockReturnValue({ data: countriesWithSafety, isLoading: false, error: undefined, mutate: jest.fn() });
-    render(<CountriesContent />);
+    const { rerender } = render(<CountriesContent />);
+
+    // 両方の国が表示されている
+    expect(screen.getByText("日本")).toBeInTheDocument();
+    expect(screen.getByText("フランス")).toBeInTheDocument();
+
+    // 危険度フィルタボタンをクリック（実際にはAPIが再呼び出しされ、フィルタされたデータが返る）
     const buttons = screen.getAllByRole("button");
     const dangerButton = buttons.find((b) => b.textContent === "危険")!;
     fireEvent.click(dangerButton);
+
+    // APIからフィルタ済みのデータが返ってくることをシミュレート
+    const filteredCountries: Country[] = [
+      { ...mockCountries[1], safety_level: 2 }, // フランスのみ
+    ];
+    mockUseSWR.mockReturnValue({ data: filteredCountries, isLoading: false, error: undefined, mutate: jest.fn() });
+    rerender(<CountriesContent />);
+
+    // フランスのみが表示される
     expect(screen.getByText("フランス")).toBeInTheDocument();
     expect(screen.queryByText("日本")).not.toBeInTheDocument();
   });

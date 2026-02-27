@@ -27,11 +27,13 @@ async function fetchApi<T>(path: string): Promise<T> {
 
 export async function getCountries(
   query?: string,
-  region?: string
+  region?: string,
+  safetyLevel?: number
 ): Promise<Country[]> {
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (region) params.set("region", region);
+  if (safetyLevel !== undefined) params.set("safety_level", safetyLevel.toString());
   const qs = params.toString();
   return fetchApi<Country[]>(`/api/countries${qs ? `?${qs}` : ""}`);
 }
