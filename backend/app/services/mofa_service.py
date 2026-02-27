@@ -128,7 +128,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
     if title:
         parts.append(title)
     if lead:
-        parts.append(lead[:200])
+        parts.append(lead)
     summary = "。".join(parts) if parts else LEVEL_SUMMARIES[level]
 
     # --- 外務省ページURL ---
@@ -152,7 +152,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
     if level > 0 and summary:
         details.append({
             "category": "外務省危険情報",
-            "description": summary[:300],
+            "description": summary,
             "severity": _level_to_severity(level),
         })
 
@@ -177,10 +177,10 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         category = WIDEAREA_CATEGORIES.get(type_cd, "広域情報")
         desc = spot_title
         if spot_lead:
-            desc += f"。{spot_lead[:150]}"
+            desc += f"。{spot_lead}"
         details.append({
             "category": category,
-            "description": desc[:300],
+            "description": desc,
             "severity": "medium",
         })
         if len(details) >= 8:
@@ -197,12 +197,12 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         seen_titles.add(mail_title)
         desc = mail_title
         if mail_lead:
-            desc += f"。{mail_lead[:150]}"
+            desc += f"。{mail_lead}"
         if mail_date:
             desc = f"[{mail_date[:10]}] {desc}"
         details.append({
             "category": "領事メール",
-            "description": desc[:300],
+            "description": desc,
             "severity": "low",
         })
 
@@ -216,7 +216,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
 
     return {
         "level": level,
-        "summary": summary[:300],
+        "summary": summary,
         "details": details,
         "mofa_url": mofa_url,
         "infection_level": infection_level,

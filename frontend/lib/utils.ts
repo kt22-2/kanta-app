@@ -35,6 +35,29 @@ export function getSafetyLabel(level: SafetyLevel): string {
   return labels[level] ?? "不明";
 }
 
+export function formatTimezoneFromJapan(utcOffset: string): string {
+  const JAPAN_OFFSET = 9;
+  const match = utcOffset.match(/^UTC([+-])(\d{2}):(\d{2})$/);
+  let offsetHours: number;
+
+  if (utcOffset === "UTC") {
+    offsetHours = 0;
+  } else if (match) {
+    const sign = match[1] === "+" ? 1 : -1;
+    offsetHours = sign * (parseInt(match[2], 10) + parseInt(match[3], 10) / 60);
+  } else {
+    return utcOffset;
+  }
+
+  const diff = offsetHours - JAPAN_OFFSET;
+  if (diff === 0) {
+    return "日本との時差: なし";
+  }
+  const formatted = Number.isInteger(diff) ? String(diff) : diff.toFixed(1);
+  const sign = diff > 0 ? "+" : "";
+  return `日本との時差: ${sign}${formatted}時間`;
+}
+
 export function getRegionLabel(region: string): string {
   const map: Record<string, string> = {
     Africa: "アフリカ",

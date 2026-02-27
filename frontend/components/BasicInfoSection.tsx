@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Info, DollarSign } from "lucide-react";
 import type { Country, EconomicInfo } from "@/lib/types";
+import { formatTimezoneFromJapan } from "@/lib/utils";
 import ExchangeWidget from "./ExchangeWidget";
 import ClimateSection from "./ClimateSection";
 
@@ -47,11 +48,13 @@ export default function BasicInfoSection({ country, economic, code }: Props) {
         {/* タイムゾーン */}
         <div className="rounded-xl glass-card p-4">
           <p className="text-xs text-muted mb-1">タイムゾーン</p>
-          <p className="text-sm text-foreground">
+          <div className="text-sm text-foreground space-y-0.5">
             {country.timezones && country.timezones.length > 0
-              ? country.timezones.slice(0, 3).join("、")
-              : "情報なし"}
-          </p>
+              ? country.timezones.slice(0, 3).map((tz) => (
+                  <p key={tz}>{formatTimezoneFromJapan(tz)}</p>
+                ))
+              : <p>情報なし</p>}
+          </div>
         </div>
 
         {/* 一人当たりGDP */}
