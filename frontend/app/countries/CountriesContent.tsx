@@ -39,18 +39,15 @@ export default function CountriesContent() {
   }, [query]);
 
   const { data: countries, isLoading, error, mutate } = useSWR(
-    ["countries", debouncedQuery, region],
-    () => getCountries(debouncedQuery || undefined, region || undefined),
+    ["countries", debouncedQuery, region, safetyLevel],
+    () => getCountries(debouncedQuery || undefined, region || undefined, safetyLevel ?? undefined),
     { revalidateOnFocus: false }
   );
 
   const sorted = useMemo(() => {
     if (!countries) return [];
     let arr = [...countries];
-    // 危険度フィルタ（クライアントサイド）
-    if (safetyLevel !== null) {
-      arr = arr.filter((c) => c.safety_level === safetyLevel);
-    }
+    // ソート処理のみ（危険度フィルタはサーバーサイドで実行）
     if (sortBy === "name") {
       arr.sort((a, b) => (a.name_ja ?? a.name).localeCompare(b.name_ja ?? b.name, "ja"));
     } else if (sortBy === "population") {
@@ -61,7 +58,7 @@ export default function CountriesContent() {
       arr.sort((a, b) => (HERITAGE_COUNT[b.code] ?? 0) - (HERITAGE_COUNT[a.code] ?? 0));
     }
     return arr;
-  }, [countries, sortBy, safetyLevel]);
+  }, [countries, sortBy]);
 
   const hasFilter = query !== "" || region !== "" || safetyLevel !== null;
 
