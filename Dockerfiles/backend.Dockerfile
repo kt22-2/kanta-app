@@ -2,12 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# 依存関係ファイルをコピーしてインストール
+# 依存関係ファイルとソースコードをコピーしてインストール
 COPY backend/pyproject.toml .
-RUN pip install --no-cache-dir -e .
-
-# アプリケーションコードをコピー
 COPY backend/app/ ./app/
+RUN pip install --no-cache-dir .
 
 EXPOSE 8000
 
