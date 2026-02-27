@@ -1,5 +1,6 @@
 import { Compass, MapPin, Globe } from "lucide-react";
-import { loadLivestreamPoints, KANTA_SOCIAL } from "@/lib/livestream-data";
+import { KANTA_SOCIAL } from "@/lib/livestream-data";
+import { loadLivestreamPoints } from "@/lib/livestream-data.server";
 import LivestreamMap from "@/components/LivestreamMap";
 import SocialLinks from "@/components/SocialLinks";
 import XFeed from "@/components/XFeed";
