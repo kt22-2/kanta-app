@@ -34,9 +34,9 @@ export default function LivestreamMap({ points }: Props) {
         scrollWheelZoom: true,
       }).setView([20, 0], 2);
 
-      // CartoDB Dark Matter タイル（ダークテーマ統一）
+      // CartoDB Positron タイル（明るいマップ）
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         { subdomains: "abcd" }
       ).addTo(map);
 

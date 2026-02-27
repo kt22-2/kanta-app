@@ -50,12 +50,9 @@ export function formatTimezoneFromJapan(utcOffset: string): string {
   }
 
   const diff = offsetHours - JAPAN_OFFSET;
-  if (diff === 0) {
-    return "日本との時差: なし";
-  }
   const formatted = Number.isInteger(diff) ? String(diff) : diff.toFixed(1);
-  const sign = diff > 0 ? "+" : "";
-  return `日本との時差: ${sign}${formatted}時間`;
+  const sign = diff >= 0 ? "+" : "";
+  return `${utcOffset} (JST${sign}${formatted})`;
 }
 
 export function getRegionLabel(region: string): string {

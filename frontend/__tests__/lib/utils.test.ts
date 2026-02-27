@@ -71,24 +71,24 @@ describe("getRegionLabel", () => {
 });
 
 describe("formatTimezoneFromJapan", () => {
-  it("UTCは日本との時差-9時間を返す", () => {
-    expect(formatTimezoneFromJapan("UTC")).toBe("日本との時差: -9時間");
+  it("UTCはUTC (JST-9)を返す", () => {
+    expect(formatTimezoneFromJapan("UTC")).toBe("UTC (JST-9)");
   });
 
-  it("UTC+09:00は時差なしを返す", () => {
-    expect(formatTimezoneFromJapan("UTC+09:00")).toBe("日本との時差: なし");
+  it("UTC+09:00はUTC+09:00 (JST+0)を返す", () => {
+    expect(formatTimezoneFromJapan("UTC+09:00")).toBe("UTC+09:00 (JST+0)");
   });
 
-  it("UTC+05:30（インド）は-3.5時間を返す", () => {
-    expect(formatTimezoneFromJapan("UTC+05:30")).toBe("日本との時差: -3.5時間");
+  it("UTC+05:30（インド）はUTC+05:30 (JST-3.5)を返す", () => {
+    expect(formatTimezoneFromJapan("UTC+05:30")).toBe("UTC+05:30 (JST-3.5)");
   });
 
-  it("UTC-05:00（米東部）は-14時間を返す", () => {
-    expect(formatTimezoneFromJapan("UTC-05:00")).toBe("日本との時差: -14時間");
+  it("UTC-05:00（米東部）はUTC-05:00 (JST-14)を返す", () => {
+    expect(formatTimezoneFromJapan("UTC-05:00")).toBe("UTC-05:00 (JST-14)");
   });
 
-  it("UTC+12:00は+3時間を返す", () => {
-    expect(formatTimezoneFromJapan("UTC+12:00")).toBe("日本との時差: +3時間");
+  it("UTC+12:00はUTC+12:00 (JST+3)を返す", () => {
+    expect(formatTimezoneFromJapan("UTC+12:00")).toBe("UTC+12:00 (JST+3)");
   });
 
   it("パース不能文字列はそのまま返す", () => {
