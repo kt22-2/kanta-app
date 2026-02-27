@@ -1,4 +1,4 @@
-id,city,country,lat,lng,date,youtubeUrl,title
+﻿id,city,country,lat,lng,date,youtubeUrl,title
 1,東京,日本,35.6762,139.6503,2024-01-01,https://youtube.com/watch?v=example1,世界一周出発！東京から旅が始まる
 2,バンコク,タイ,13.7563,100.5018,2024-01-15,https://youtube.com/watch?v=example2,バンコクの街を歩く！タイ料理食べまくり
 3,ムンバイ,インド,19.076,72.8777,2024-02-01,https://youtube.com/watch?v=example3,カオスなムンバイを探検！

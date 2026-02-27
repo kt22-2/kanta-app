@@ -11,8 +11,16 @@ jest.mock("@/components/LivestreamMap", () => {
   };
 });
 
+// XFeedコンポーネントをモック（useSWRを使うClient Component）
+jest.mock("@/components/XFeed", () => {
+  return function MockXFeed() {
+    return <div data-testid="x-feed">X Feed</div>;
+  };
+});
+
 // fs/pathモジュールをモック（Server Component内でのCSV読み込み）
 jest.mock("fs", () => ({
+  existsSync: () => true,
   readFileSync: () =>
     `id,city,country,lat,lng,date,youtubeUrl,title
 1,東京,日本,35.6762,139.6503,2024-01-01,https://youtube.com/watch?v=example1,世界一周出発！

@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import countries, safety, attractions, news
+from app.api import countries, safety, attractions, news, x_posts
 from app.core.config import settings
 from app.core.http_client import get_http_client, close_http_client
 
@@ -38,6 +38,7 @@ app.include_router(countries.router)
 app.include_router(safety.router)
 app.include_router(attractions.router)
 app.include_router(news.router)
+app.include_router(x_posts.router)
 
 
 @app.get("/health", tags=["system"])

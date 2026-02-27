@@ -151,3 +151,13 @@ export interface EconomicInfo {
   gdp_year: number | null;
   available: boolean;
 }
+
+export interface XPost {
+  id: string;
+  text: string;
+  created_at: string;
+  url: string;
+  media_url: string | null;
+  like_count: number;
+  retweet_count: number;
+}

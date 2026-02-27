@@ -15,7 +15,7 @@ export interface LivestreamPoint {
 export const KANTA_SOCIAL = {
   youtube: "https://www.youtube.com/@KANTA_worldwide",
   instagram: "https://www.instagram.com/kanta_worldwide/",
-  x: "https://x.com/kanta_worldwide",
+  x: "https://x.com/anta_kaoi",
 };
 
 export function parseLivestreamCsv(csv: string): LivestreamPoint[] {

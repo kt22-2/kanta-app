@@ -153,3 +153,13 @@ class EconomicInfo(BaseModel):
     gdp_per_capita: float | None = None
     gdp_year: int | None = None
     available: bool = True
+
+
+class XPost(BaseModel):
+    id: str
+    text: str
+    created_at: str
+    url: str
+    media_url: str | None = None
+    like_count: int = 0
+    retweet_count: int = 0

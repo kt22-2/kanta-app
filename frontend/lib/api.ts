@@ -9,6 +9,7 @@ import type {
   WikiSummary,
   ClimateInfo,
   EconomicInfo,
+  XPost,
 } from "./types";
 
 // サーバー側: バックエンドに直接接続、クライアント側: Next.js rewrites 経由（相対URL）
@@ -76,4 +77,8 @@ export async function getClimateInfo(code: string): Promise<ClimateInfo> {
 
 export async function getEconomicInfo(code: string): Promise<EconomicInfo> {
   return fetchApi<EconomicInfo>(`/api/countries/${code}/economic`);
+}
+
+export async function getXPosts(username = "anta_kaoi"): Promise<XPost[]> {
+  return fetchApi<XPost[]>(`/api/x/posts?username=${username}`);
 }
