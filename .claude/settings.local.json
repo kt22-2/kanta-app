@@ -55,7 +55,9 @@
       "Bash(git commit:*)",
       "Bash(docker compose images)",
       "Bash(docker images --format \"table {{.Repository}}\\\\t{{.Tag}}\\\\t{{.Size}}\")",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(git add frontend/__tests__/lib/utils.test.ts backend/tests/test_safety.py)",
+      "Bash(git add frontend/lib/utils.ts frontend/components/BasicInfoSection.tsx backend/app/services/mofa_service.py)"
     ]
   }
 }
