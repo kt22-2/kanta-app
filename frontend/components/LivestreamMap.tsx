@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { LivestreamPoint } from "@/lib/livestream-data";
+import type { LocationGroup } from "@/lib/livestream-data";
+import { buildPopupHtml } from "@/lib/livestream-data";
 
 interface Props {
-  points: LivestreamPoint[];
+  groups: LocationGroup[];
 }
 
-export default function LivestreamMap({ points }: Props) {
+export default function LivestreamMap({ groups }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
 
@@ -33,7 +34,10 @@ export default function LivestreamMap({ points }: Props) {
         attributionControl: false,
         scrollWheelZoom: true,
         worldCopyJump: false,
-        maxBounds: [[-90, -180], [90, 180]],
+        maxBounds: [
+          [-90, -180],
+          [90, 180],
+        ],
         maxBoundsViscosity: 1.0,
         minZoom: 2,
       }).setView([20, 0], 2);
@@ -44,9 +48,9 @@ export default function LivestreamMap({ points }: Props) {
         { subdomains: "abcd", noWrap: true }
       ).addTo(map);
 
-      // ポリライン（金色破線で全ポイントを結ぶ）
-      const coords = points.map(
-        (p) => [p.lat, p.lng] as [number, number]
+      // ポリライン（金色破線で全ロケーションを結ぶ）
+      const coords = groups.map(
+        (g) => [g.lat, g.lng] as [number, number]
       );
       L.polyline(coords, {
         color: "#C8A96E",
@@ -55,11 +59,14 @@ export default function LivestreamMap({ points }: Props) {
         dashArray: "8,12",
       }).addTo(map);
 
-      // マーカー
-      points.forEach((point) => {
+      // グループごとに1マーカー
+      groups.forEach((group) => {
+        const count = group.videos.length;
+        const size = count > 1 ? 32 : 24;
+
         const icon = L.divIcon({
           html: `<div style="
-            width: 24px; height: 24px;
+            width: ${size}px; height: ${size}px;
             background: #C8A96E;
             border-radius: 50%;
             border: 2px solid #fff;
@@ -67,31 +74,24 @@ export default function LivestreamMap({ points }: Props) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: ${count > 1 ? 13 : 11}px;
             font-weight: bold;
             color: #0F1923;
-          ">${point.id}</div>`,
+          ">${count > 1 ? count : "●"}</div>`,
           className: "",
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
         });
 
-        const marker = L.marker([point.lat, point.lng], { icon }).addTo(
+        const marker = L.marker([group.lat, group.lng], { icon }).addTo(
           map
         );
 
-        marker.bindPopup(`
-          <div style="min-width: 200px;">
-            <div style="font-weight: bold; margin-bottom: 4px;">${point.title}</div>
-            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">
-              ${point.city}, ${point.country} — ${point.date}
-            </div>
-            <a href="${point.youtubeUrl}" target="_blank" rel="noopener noreferrer"
-               style="color: #C8A96E; text-decoration: underline; font-size: 13px;">
-              YouTubeで見る ▶
-            </a>
-          </div>
-        `);
+        marker.bindPopup(buildPopupHtml(group), {
+          maxWidth: 380,
+          maxHeight: 400,
+          className: "youtube-popup",
+        });
       });
 
       // 全マーカーが収まるようにズーム調整
@@ -110,7 +110,7 @@ export default function LivestreamMap({ points }: Props) {
         mapRef.current = null;
       }
     };
-  }, [points]);
+  }, [groups]);
 
   return (
     <div

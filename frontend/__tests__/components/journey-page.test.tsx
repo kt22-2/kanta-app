@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import {
   KANTA_SOCIAL,
   parseLivestreamCsv,
+  groupPointsByLocation,
+  buildPopupHtml,
 } from "@/lib/livestream-data";
 
 // Leaflet地図コンポーネントをモック
@@ -105,6 +107,103 @@ describe("JourneyPage", () => {
     const xLink = screen.getByRole("link", { name: /^x$/i });
     expect(xLink).toHaveAttribute("href", KANTA_SOCIAL.x);
     expect(xLink).toHaveAttribute("target", "_blank");
+  });
+});
+
+describe("groupPointsByLocation", () => {
+  it("同じ都市の動画を1グループにまとめる", () => {
+    const points = [
+      { id: 1, city: "東京", country: "日本", lat: 35.67, lng: 139.65, date: "2024-01-01", youtubeUrl: "https://youtube.com/watch?v=a1", title: "動画1" },
+      { id: 2, city: "東京", country: "日本", lat: 35.67, lng: 139.65, date: "2024-01-03", youtubeUrl: "https://youtube.com/watch?v=a2", title: "動画2" },
+      { id: 3, city: "パリ", country: "フランス", lat: 48.85, lng: 2.35, date: "2024-02-01", youtubeUrl: "https://youtube.com/watch?v=b1", title: "動画3" },
+    ];
+    const groups = groupPointsByLocation(points);
+    expect(groups).toHaveLength(2);
+
+    const tokyo = groups.find((g) => g.city === "東京")!;
+    expect(tokyo.videos).toHaveLength(2);
+    expect(tokyo.lat).toBe(35.67);
+    expect(tokyo.lng).toBe(139.65);
+    expect(tokyo.dateRange).toEqual({ start: "2024-01-01", end: "2024-01-03" });
+  });
+
+  it("最新グループにisLatestフラグを立てる", () => {
+    const points = [
+      { id: 1, city: "東京", country: "日本", lat: 35.67, lng: 139.65, date: "2024-01-01", youtubeUrl: "https://youtube.com/watch?v=a1", title: "動画1" },
+      { id: 2, city: "パリ", country: "フランス", lat: 48.85, lng: 2.35, date: "2024-03-01", youtubeUrl: "https://youtube.com/watch?v=b1", title: "動画2" },
+    ];
+    const groups = groupPointsByLocation(points);
+    const paris = groups.find((g) => g.city === "パリ")!;
+    expect(paris.isLatest).toBe(true);
+    const tokyo = groups.find((g) => g.city === "東京")!;
+    expect(tokyo.isLatest).toBe(false);
+  });
+
+  it("動画が1本の場合はdateRangeのstartとendが同じになる", () => {
+    const points = [
+      { id: 1, city: "パリ", country: "フランス", lat: 48.85, lng: 2.35, date: "2024-02-01", youtubeUrl: "https://youtube.com/watch?v=b1", title: "動画1" },
+    ];
+    const groups = groupPointsByLocation(points);
+    expect(groups[0].dateRange).toEqual({ start: "2024-02-01", end: "2024-02-01" });
+  });
+});
+
+describe("buildPopupHtml", () => {
+  it("ロケーション名と動画数を含むHTMLを生成する", () => {
+    const group = {
+      city: "東京",
+      country: "日本",
+      lat: 35.67,
+      lng: 139.65,
+      dateRange: { start: "2024-01-01", end: "2024-01-03" },
+      videos: [
+        { id: 1, youtubeUrl: "https://youtube.com/watch?v=abc123", title: "動画1", date: "2024-01-01" },
+        { id: 2, youtubeUrl: "https://youtube.com/watch?v=def456", title: "動画2", date: "2024-01-03" },
+      ],
+      isLatest: false,
+    };
+    const html = buildPopupHtml(group);
+    expect(html).toContain("東京, 日本");
+    expect(html).toContain("2本の動画");
+    expect(html).toContain("2024-01-01 〜 2024-01-03");
+    expect(html).toContain('src="https://img.youtube.com/vi/abc123/mqdefault.jpg"');
+    expect(html).toContain('href="https://youtube.com/watch?v=abc123"');
+    expect(html).toContain('target="_blank"');
+  });
+
+  it("動画が1本の場合は日付範囲ではなく単一日付を表示する", () => {
+    const group = {
+      city: "パリ",
+      country: "フランス",
+      lat: 48.85,
+      lng: 2.35,
+      dateRange: { start: "2024-03-01", end: "2024-03-01" },
+      videos: [
+        { id: 1, youtubeUrl: "https://youtube.com/watch?v=xyz789", title: "パリ動画", date: "2024-03-01" },
+      ],
+      isLatest: false,
+    };
+    const html = buildPopupHtml(group);
+    expect(html).toContain("2024-03-01");
+    expect(html).not.toContain("〜");
+    expect(html).toContain("1本の動画");
+  });
+
+  it("チャンネルリンクを含む", () => {
+    const group = {
+      city: "東京",
+      country: "日本",
+      lat: 35.67,
+      lng: 139.65,
+      dateRange: { start: "2024-01-01", end: "2024-01-01" },
+      videos: [
+        { id: 1, youtubeUrl: "https://youtube.com/watch?v=abc", title: "動画", date: "2024-01-01" },
+      ],
+      isLatest: false,
+    };
+    const html = buildPopupHtml(group);
+    expect(html).toContain("https://www.youtube.com/@KANTA_worldwide");
+    expect(html).toContain("チャンネルを見る");
   });
 });
 

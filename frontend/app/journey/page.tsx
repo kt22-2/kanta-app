@@ -1,5 +1,5 @@
 import { Compass, MapPin, Globe } from "lucide-react";
-import { loadLivestreamPoints, KANTA_SOCIAL } from "@/lib/livestream-data";
+import { loadLivestreamPoints, groupPointsByLocation, KANTA_SOCIAL } from "@/lib/livestream-data";
 import LivestreamMap from "@/components/LivestreamMap";
 import SocialLinks from "@/components/SocialLinks";
 import XFeed from "@/components/XFeed";
@@ -11,6 +11,7 @@ export const metadata = {
 
 export default function JourneyPage() {
   const points = loadLivestreamPoints();
+  const groups = groupPointsByLocation(points);
   const uniqueCountries = new Set(points.map((p) => p.country)).size;
 
   return (
@@ -55,7 +56,7 @@ export default function JourneyPage() {
 
       {/* 地図 */}
       <div className="glass-card rounded-xl p-2 mb-8">
-        <LivestreamMap points={points} />
+        <LivestreamMap groups={groups} />
       </div>
 
       {/* X（Twitter）フィード */}
