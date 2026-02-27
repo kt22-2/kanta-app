@@ -24,8 +24,9 @@ jest.mock("fs", () => ({
   readFileSync: () =>
     `id,city,country,lat,lng,date,youtubeUrl,title
 1,東京,日本,35.6762,139.6503,2024-01-01,https://youtube.com/watch?v=example1,世界一周出発！
-2,バンコク,タイ,13.7563,100.5018,2024-01-15,https://youtube.com/watch?v=example2,バンコク散策
-3,パリ,フランス,48.8566,2.3522,2024-03-25,https://youtube.com/watch?v=example3,パリ到着`,
+2,東京,日本,35.6762,139.6503,2024-01-03,https://youtube.com/watch?v=example2,東京グルメ旅
+3,バンコク,タイ,13.7563,100.5018,2024-01-15,https://youtube.com/watch?v=example3,バンコク散策
+4,パリ,フランス,48.8566,2.3522,2024-03-25,https://youtube.com/watch?v=example4,パリ到着`,
 }));
 jest.mock("path", () => ({
   join: (...args: string[]) => args.join("/"),
@@ -70,8 +71,8 @@ describe("JourneyPage", () => {
   });
 
   it("配信回数を表示する", () => {
-    // モックCSVは3行
-    const stats = screen.getAllByText("3");
+    // モックCSVは4行
+    const stats = screen.getAllByText("4");
     expect(stats.length).toBeGreaterThanOrEqual(1);
   });
 

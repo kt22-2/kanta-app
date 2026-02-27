@@ -2,6 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import type { LivestreamPoint } from "@/lib/livestream-data";
+import {
+  groupPointsByLocation,
+  buildPopupHtml,
+} from "@/lib/livestream-data";
 
 interface Props {
   points: LivestreamPoint[];
@@ -38,15 +42,18 @@ export default function LivestreamMap({ points }: Props) {
         minZoom: 2,
       }).setView([20, 0], 2);
 
-      // CartoDB Positron タイル（明るいマップ）
+      // CartoDB Positron タイル
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         { subdomains: "abcd", noWrap: true }
       ).addTo(map);
 
-      // ポリライン（金色破線で全ポイントを結ぶ）
-      const coords = points.map(
-        (p) => [p.lat, p.lng] as [number, number]
+      // グループ化
+      const groups = groupPointsByLocation(points);
+
+      // ポリライン（グループ座標を結ぶ）
+      const coords = groups.map(
+        (g) => [g.lat, g.lng] as [number, number]
       );
       L.polyline(coords, {
         color: "#C8A96E",
@@ -56,10 +63,14 @@ export default function LivestreamMap({ points }: Props) {
       }).addTo(map);
 
       // マーカー
-      points.forEach((point) => {
+      groups.forEach((group) => {
+        const isMultiple = group.videos.length > 1;
+        const size = isMultiple ? 28 : 20;
+        const fontSize = isMultiple ? 11 : 0;
+
         const icon = L.divIcon({
           html: `<div style="
-            width: 24px; height: 24px;
+            width: ${size}px; height: ${size}px;
             background: #C8A96E;
             border-radius: 50%;
             border: 2px solid #fff;
@@ -67,31 +78,21 @@ export default function LivestreamMap({ points }: Props) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: ${fontSize}px;
             font-weight: bold;
             color: #0F1923;
-          ">${point.id}</div>`,
+          ">${isMultiple ? group.videos.length : ""}</div>`,
           className: "",
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
         });
 
-        const marker = L.marker([point.lat, point.lng], { icon }).addTo(
-          map
-        );
-
-        marker.bindPopup(`
-          <div style="min-width: 200px;">
-            <div style="font-weight: bold; margin-bottom: 4px;">${point.title}</div>
-            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">
-              ${point.city}, ${point.country} — ${point.date}
-            </div>
-            <a href="${point.youtubeUrl}" target="_blank" rel="noopener noreferrer"
-               style="color: #C8A96E; text-decoration: underline; font-size: 13px;">
-              YouTubeで見る ▶
-            </a>
-          </div>
-        `);
+        const marker = L.marker([group.lat, group.lng], { icon }).addTo(map);
+        marker.bindPopup(buildPopupHtml(group), {
+          className: "yt-popup-wrapper",
+          maxWidth: 340,
+          minWidth: 280,
+        });
       });
 
       // 全マーカーが収まるようにズーム調整
