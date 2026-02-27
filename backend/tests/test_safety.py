@@ -182,7 +182,7 @@ class TestStateDeptIntegration:
         categories = [d["category"] for d in response.json()["details"]]
         assert "米国国務省渡航情報" in categories
 
-    def test_state_dept_failure_graceful(self, client):
+    def test_state_dept_failure_graceful(self, client: TestClient):
         with patch(
             "app.services.mofa_service.MofaSafetyService.get_safety_info",
             new_callable=AsyncMock,
@@ -195,3 +195,83 @@ class TestStateDeptIntegration:
             response = client.get("/api/countries/JP/safety")
         assert response.status_code == 200
         assert response.json()["level"] == 0
+
+
+# ── テキスト切り詰めなしテスト ─────────────────────────────────────
+
+class TestNoTextTruncation:
+    """外務省XMLから取得したテキストが切り詰められないことを検証する"""
+
+    def test_long_risk_lead_not_truncated_in_summary(self):
+        from app.services.mofa_service import _parse_xml
+        long_lead = "あ" * 500
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            f"<riskTitle>危険情報</riskTitle>"
+            f"<riskLead>{long_lead}</riskLead></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert long_lead in result["summary"]
+
+    def test_long_summary_not_truncated(self):
+        from app.services.mofa_service import _parse_xml
+        long_lead = "あ" * 500
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            f"<riskTitle>危険情報</riskTitle>"
+            f"<riskLead>{long_lead}</riskLead></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        # summaryがdetailsにも切り詰めなしで含まれる
+        assert len(result["summary"]) > 300
+
+    def test_long_detail_description_not_truncated(self):
+        from app.services.mofa_service import _parse_xml
+        long_lead = "い" * 400
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            f"<riskTitle>危険情報</riskTitle>"
+            f"<riskLead>{long_lead}</riskLead></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        detail_desc = result["details"][0]["description"]
+        assert len(detail_desc) > 300
+
+    def test_long_widearea_lead_not_truncated(self):
+        from app.services.mofa_service import _parse_xml
+        long_spot_lead = "う" * 300
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            "<riskTitle>危険情報</riskTitle><riskLead>概要</riskLead>"
+            "<wideareaSpot><typeCd>C50</typeCd>"
+            f"<title>テロ警告</title><lead>{long_spot_lead}</lead>"
+            "</wideareaSpot></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        widearea_details = [d for d in result["details"] if d["category"] == "テロ情報"]
+        assert len(widearea_details) == 1
+        assert long_spot_lead in widearea_details[0]["description"]
+
+    def test_long_mail_lead_not_truncated(self):
+        from app.services.mofa_service import _parse_xml
+        long_mail_lead = "え" * 300
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            "<riskTitle>危険情報</riskTitle><riskLead>概要</riskLead>"
+            f"<mail><title>領事メール件名</title><lead>{long_mail_lead}</lead>"
+            "<leaveDate>2024-01-15</leaveDate></mail></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        mail_details = [d for d in result["details"] if d["category"] == "領事メール"]
+        assert len(mail_details) == 1
+        assert long_mail_lead in mail_details[0]["description"]
