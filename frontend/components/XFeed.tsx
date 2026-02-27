@@ -1,44 +1,47 @@
 "use client";
 
-import useSWR from "swr";
-import { getXPosts } from "@/lib/api";
-import XPostCard from "./XPostCard";
-
-function Skeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="h-32 shimmer rounded-xl"
-          style={{ animationDelay: `${i * 0.1}s` }}
-        />
-      ))}
-    </div>
-  );
-}
+import { useEffect, useRef } from "react";
+import { KANTA_SOCIAL } from "@/lib/livestream-data";
 
 export default function XFeed() {
-  const { data, error, isLoading } = useSWR(
-    "/api/x/posts",
-    () => getXPosts()
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scriptLoaded = useRef(false);
 
-  if (isLoading) return <Skeleton />;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-  if (error || !data || data.length === 0) {
-    return (
-      <p className="text-sm text-muted">
-        現在X（Twitter）の投稿を取得できません
-      </p>
-    );
-  }
+    // X widgets.js を一度だけ読み込む
+    if (!scriptLoaded.current) {
+      const existing = document.getElementById("x-widgets-js");
+      if (!existing) {
+        const script = document.createElement("script");
+        script.id = "x-widgets-js";
+        script.src = "https://platform.twitter.com/widgets.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
+      scriptLoaded.current = true;
+    }
+
+    // widgets.js が既に読み込まれている場合はタイムラインを再レンダリング
+    const win = window as unknown as { twttr?: { widgets?: { load?: (el: HTMLElement) => void } } };
+    if (win.twttr?.widgets?.load) {
+      win.twttr.widgets.load(containerRef.current);
+    }
+  }, []);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {data.slice(0, 10).map((post) => (
-        <XPostCard key={post.id} post={post} />
-      ))}
+    <div ref={containerRef} data-testid="x-timeline">
+      <a
+        className="twitter-timeline"
+        data-theme="dark"
+        data-chrome="noheader nofooter noborders transparent"
+        data-height="600"
+        href={KANTA_SOCIAL.x}
+        aria-label="X タイムライン"
+      >
+        読み込み中...
+      </a>
     </div>
   );
 }

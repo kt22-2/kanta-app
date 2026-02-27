@@ -219,6 +219,11 @@ body {
   background-size: 32px 32px;
 }
 
+/* Leaflet z-index をヘッダー(z-50)より下に制限 */
+.leaflet-container {
+  z-index: 0;
+}
+
 /* Leaflet ポップアップ ダークテーマ */
 .leaflet-popup-content-wrapper {
   background: var(--color-surface) !important;
