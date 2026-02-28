@@ -6,6 +6,8 @@ import {
   getYouTubeThumbnail,
   groupPointsByLocation,
   buildPopupHtml,
+  getCountryFlag,
+  groupByCountry,
 } from "@/lib/livestream-data";
 
 describe("getYouTubeVideoId", () => {
@@ -269,5 +271,107 @@ describe("buildPopupHtml", () => {
     };
     const html = buildPopupHtml(group);
     expect(html).toContain("2本");
+  });
+});
+
+describe("getCountryFlag", () => {
+  it("日本の国旗絵文字を返す", () => {
+    expect(getCountryFlag("日本")).toBe("🇯🇵");
+  });
+
+  it("タイの国旗絵文字を返す", () => {
+    expect(getCountryFlag("タイ")).toBe("🇹🇭");
+  });
+
+  it("スリランカの国旗絵文字を返す", () => {
+    expect(getCountryFlag("スリランカ")).toBe("🇱🇰");
+  });
+
+  it("インドの国旗絵文字を返す", () => {
+    expect(getCountryFlag("インド")).toBe("🇮🇳");
+  });
+
+  it("未知の国はデフォルト地球絵文字を返す", () => {
+    expect(getCountryFlag("未知の国")).toBe("🌍");
+  });
+});
+
+describe("groupByCountry", () => {
+  const makeGroup = (
+    city: string,
+    country: string,
+    videos: Partial<LivestreamPoint>[]
+  ) => ({
+    city,
+    country,
+    lat: 35.0,
+    lng: 135.0,
+    dateRange: videos.length > 1 ? "2024-01-01 ~ 2024-01-10" : "2024-01-01",
+    videos: videos.map((v, i) => ({
+      id: i + 1,
+      city,
+      country,
+      lat: 35.0,
+      lng: 135.0,
+      date: v.date ?? "2024-01-01",
+      youtubeUrl: v.youtubeUrl ?? `https://youtube.com/watch?v=test${i}`,
+      title: v.title ?? `動画${i + 1}`,
+    })),
+  });
+
+  it("同一国の都市をまとめる", () => {
+    const groups = [
+      makeGroup("ムンバイ", "インド", [{ date: "2024-02-01" }]),
+      makeGroup("ジョードプル", "インド", [{ date: "2024-02-05" }]),
+    ];
+    const result = groupByCountry(groups);
+    expect(result).toHaveLength(1);
+    expect(result[0].country).toBe("インド");
+    expect(result[0].cities).toContain("ムンバイ");
+    expect(result[0].cities).toContain("ジョードプル");
+  });
+
+  it("異なる国は別の CountryGroup になる", () => {
+    const groups = [
+      makeGroup("東京", "日本", [{ date: "2024-01-01" }]),
+      makeGroup("バンコク", "タイ", [{ date: "2024-01-10" }]),
+    ];
+    const result = groupByCountry(groups);
+    expect(result).toHaveLength(2);
+  });
+
+  it("totalVideos は該当国の全動画数を返す", () => {
+    const groups = [
+      makeGroup("ムンバイ", "インド", [
+        { date: "2024-02-01" },
+        { date: "2024-02-02" },
+        { date: "2024-02-03" },
+      ]),
+      makeGroup("ジョードプル", "インド", [
+        { date: "2024-02-05" },
+        { date: "2024-02-06" },
+      ]),
+    ];
+    const result = groupByCountry(groups);
+    expect(result[0].totalVideos).toBe(5);
+  });
+
+  it("flag フィールドに国旗絵文字が入る", () => {
+    const groups = [makeGroup("東京", "日本", [{ date: "2024-01-01" }])];
+    const result = groupByCountry(groups);
+    expect(result[0].flag).toBe("🇯🇵");
+  });
+
+  it("dateRange は国全体の最初と最後の日付を使う", () => {
+    const groups = [
+      makeGroup("ムンバイ", "インド", [{ date: "2024-02-01" }]),
+      makeGroup("ジョードプル", "インド", [{ date: "2024-02-10" }]),
+    ];
+    const result = groupByCountry(groups);
+    expect(result[0].dateRange).toBe("2024-02-01 ~ 2024-02-10");
+  });
+
+  it("空配列は空配列を返す", () => {
+    expect(groupByCountry([])).toEqual([]);
   });
 });

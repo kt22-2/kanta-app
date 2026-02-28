@@ -1,75 +1,90 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { LivestreamPoint } from "@/lib/livestream-data";
 import {
   groupPointsByLocation,
   buildPopupHtml,
 } from "@/lib/livestream-data";
 
+export interface LivestreamMapHandle {
+  flyToCountry: (lat: number, lng: number, zoom?: number) => void;
+}
+
 interface Props {
   points: LivestreamPoint[];
 }
 
-export default function LivestreamMap({ points }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<unknown>(null);
+// eslint-disable-next-line react/display-name
+const LivestreamMap = forwardRef<LivestreamMapHandle, Props>(
+  function LivestreamMap({ points }, ref) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const mapRef = useRef<{
+      flyTo: (latlng: [number, number], zoom: number, options?: object) => void;
+      remove: () => void;
+    } | null>(null);
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    useImperativeHandle(ref, () => ({
+      flyToCountry: (lat: number, lng: number, zoom = 7) => {
+        mapRef.current?.flyTo([lat, lng], zoom, { duration: 1.5 });
+      },
+    }));
 
-    let isMounted = true;
+    useEffect(() => {
+      if (!containerRef.current || mapRef.current) return;
 
-    import("leaflet").then((L) => {
-      if (!isMounted || !containerRef.current || mapRef.current) return;
+      let isMounted = true;
 
-      // Leaflet CSS を動的に注入
-      if (!document.getElementById("leaflet-css")) {
-        const link = document.createElement("link");
-        link.id = "leaflet-css";
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
-      }
+      import("leaflet").then((L) => {
+        if (!isMounted || !containerRef.current || mapRef.current) return;
 
-      const map = L.map(containerRef.current, {
-        zoomControl: true,
-        attributionControl: false,
-        scrollWheelZoom: true,
-        worldCopyJump: false,
-        maxBounds: [[-90, -180], [90, 180]],
-        maxBoundsViscosity: 1.0,
-        minZoom: 2,
-      }).setView([20, 0], 2);
+        // Leaflet CSS を動的に注入
+        if (!document.getElementById("leaflet-css")) {
+          const link = document.createElement("link");
+          link.id = "leaflet-css";
+          link.rel = "stylesheet";
+          link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+          document.head.appendChild(link);
+        }
 
-      // CartoDB Positron タイル
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-        { subdomains: "abcd", noWrap: true }
-      ).addTo(map);
+        const map = L.map(containerRef.current, {
+          zoomControl: true,
+          attributionControl: false,
+          scrollWheelZoom: true,
+          worldCopyJump: false,
+          maxBounds: [[-90, -180], [90, 180]],
+          maxBoundsViscosity: 1.0,
+          minZoom: 2,
+        }).setView([20, 0], 2);
 
-      // グループ化
-      const groups = groupPointsByLocation(points);
+        // CartoDB Positron タイル
+        L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+          { subdomains: "abcd", noWrap: true }
+        ).addTo(map);
 
-      // ポリライン（グループ座標を結ぶ）
-      const coords = groups.map(
-        (g) => [g.lat, g.lng] as [number, number]
-      );
-      L.polyline(coords, {
-        color: "#C8A96E",
-        weight: 2,
-        opacity: 0.7,
-        dashArray: "8,12",
-      }).addTo(map);
+        // グループ化
+        const groups = groupPointsByLocation(points);
 
-      // マーカー
-      groups.forEach((group) => {
-        const isMultiple = group.videos.length > 1;
-        const size = isMultiple ? 28 : 20;
-        const fontSize = isMultiple ? 11 : 0;
+        // ポリライン（グループ座標を結ぶ）
+        const coords = groups.map(
+          (g) => [g.lat, g.lng] as [number, number]
+        );
+        L.polyline(coords, {
+          color: "#C8A96E",
+          weight: 2,
+          opacity: 0.7,
+          dashArray: "8,12",
+        }).addTo(map);
 
-        const icon = L.divIcon({
-          html: `<div style="
+        // マーカー
+        groups.forEach((group) => {
+          const isMultiple = group.videos.length > 1;
+          const size = isMultiple ? 28 : 20;
+          const fontSize = isMultiple ? 11 : 0;
+
+          const icon = L.divIcon({
+            html: `<div style="
             width: ${size}px; height: ${size}px;
             background: #C8A96E;
             border-radius: 50%;
@@ -82,42 +97,46 @@ export default function LivestreamMap({ points }: Props) {
             font-weight: bold;
             color: #0F1923;
           ">${isMultiple ? group.videos.length : ""}</div>`,
-          className: "",
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
+            className: "",
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+
+          const marker = L.marker([group.lat, group.lng], { icon }).addTo(map);
+          marker.bindPopup(buildPopupHtml(group), {
+            className: "yt-popup-wrapper",
+            maxWidth: 340,
+            minWidth: 280,
+          });
         });
 
-        const marker = L.marker([group.lat, group.lng], { icon }).addTo(map);
-        marker.bindPopup(buildPopupHtml(group), {
-          className: "yt-popup-wrapper",
-          maxWidth: 340,
-          minWidth: 280,
-        });
+        // 全マーカーが収まるようにズーム調整
+        if (coords.length > 0) {
+          const bounds = L.latLngBounds(coords);
+          map.fitBounds(bounds, { padding: [40, 40] });
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mapRef.current = map as any;
       });
 
-      // 全マーカーが収まるようにズーム調整
-      if (coords.length > 0) {
-        const bounds = L.latLngBounds(coords);
-        map.fitBounds(bounds, { padding: [40, 40] });
-      }
+      return () => {
+        isMounted = false;
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+      };
+    }, [points]);
 
-      mapRef.current = map;
-    });
+    return (
+      <div
+        ref={containerRef}
+        className="w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden"
+        aria-label="ライブ配信地図"
+      />
+    );
+  }
+);
 
-    return () => {
-      isMounted = false;
-      if (mapRef.current) {
-        (mapRef.current as { remove: () => void }).remove();
-        mapRef.current = null;
-      }
-    };
-  }, [points]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden"
-      aria-label="ライブ配信地図"
-    />
-  );
-}
+export default LivestreamMap;

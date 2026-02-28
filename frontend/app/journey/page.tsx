@@ -1,9 +1,8 @@
 import { Compass, MapPin, Globe } from "lucide-react";
-import { KANTA_SOCIAL } from "@/lib/livestream-data";
 import { loadLivestreamPoints } from "@/lib/livestream-data.server";
-import LivestreamMap from "@/components/LivestreamMap";
 import SocialLinks from "@/components/SocialLinks";
-import XFeed from "@/components/XFeed";
+import JourneyMapSection from "@/components/JourneyMapSection";
+import JourneyTimeline from "@/components/JourneyTimeline";
 
 export const metadata = {
   title: "KANTAの軌跡 | KANTA TRAVEL",
@@ -54,29 +53,14 @@ export default function JourneyPage() {
         </div>
       </div>
 
-      {/* メインコンテンツ: 地図 + Xサイドバー */}
-      <div className="flex flex-col lg:flex-row gap-6 mb-8">
-        {/* 地図（メイン） */}
-        <div className="flex-1 min-w-0">
-          <div className="glass-card rounded-xl p-2">
-            <LivestreamMap points={points} />
-          </div>
-        </div>
+      {/* 国別サマリーカード + 地図 + Xサイドバー */}
+      <div className="mb-8">
+        <JourneyMapSection points={points} />
+      </div>
 
-        {/* X タイムライン（サイドバー） */}
-        <aside className="lg:w-[350px] shrink-0">
-          <div className="glass-card rounded-xl p-4 lg:sticky lg:top-20">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="section-icon">
-                <svg className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-foreground">最新ポスト</h2>
-            </div>
-            <XFeed />
-          </div>
-        </aside>
+      {/* 旅程タイムライン */}
+      <div className="mb-8">
+        <JourneyTimeline points={points} />
       </div>
 
       {/* SNSリンク */}

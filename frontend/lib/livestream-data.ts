@@ -91,6 +91,63 @@ export function groupPointsByLocation(
   return groups;
 }
 
+export interface CountryGroup {
+  country: string;
+  flag: string;
+  cities: string[];
+  totalVideos: number;
+  dateRange: string;
+  lat: number;
+  lng: number;
+}
+
+export function getCountryFlag(country: string): string {
+  const flags: Record<string, string> = {
+    日本: "🇯🇵",
+    タイ: "🇹🇭",
+    スリランカ: "🇱🇰",
+    インド: "🇮🇳",
+  };
+  return flags[country] ?? "🌍";
+}
+
+export function groupByCountry(groups: LocationGroup[]): CountryGroup[] {
+  if (groups.length === 0) return [];
+
+  const map = new Map<string, LocationGroup[]>();
+  for (const group of groups) {
+    const existing = map.get(group.country);
+    if (existing) {
+      existing.push(group);
+    } else {
+      map.set(group.country, [group]);
+    }
+  }
+
+  const result: CountryGroup[] = [];
+  for (const [country, countryGroups] of map.entries()) {
+    const allVideos = countryGroups.flatMap((g) => g.videos);
+    allVideos.sort((a, b) => a.date.localeCompare(b.date));
+    const cities = countryGroups.map((g) => g.city);
+    const firstDate = allVideos[0]?.date ?? "";
+    const lastDate = allVideos[allVideos.length - 1]?.date ?? "";
+    const dateRange =
+      firstDate === lastDate ? firstDate : `${firstDate} ~ ${lastDate}`;
+    const first = countryGroups[0];
+    result.push({
+      country,
+      flag: getCountryFlag(country),
+      cities,
+      totalVideos: allVideos.length,
+      dateRange,
+      lat: first.lat,
+      lng: first.lng,
+    });
+  }
+
+  return result;
+}
+
 export function buildPopupHtml(group: LocationGroup): string {
   const videoCount = group.videos.length;
   const videoItems = group.videos
