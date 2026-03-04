@@ -51,6 +51,7 @@ class SafetyInfo(BaseModel):
     infection_level: int = 0
     safety_measure_url: str | None = None
     regional_risks: list[RegionalRisk] = []
+    risk_map_url: str | None = None
 
 
 class EntryRequirement(BaseModel):

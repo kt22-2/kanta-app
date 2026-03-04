@@ -48,6 +48,7 @@ export interface SafetyInfo {
   infection_level?: number;
   safety_measure_url?: string;
   regional_risks?: RegionalRisk[];
+  risk_map_url?: string;
 }
 
 export interface EntryRequirement {

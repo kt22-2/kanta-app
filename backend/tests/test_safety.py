@@ -363,3 +363,53 @@ class TestRegionalRisks:
         ).encode("utf-8")
         result = _parse_xml(xml)
         assert result["regional_risks"] == []
+
+
+# ── 危険度マップURLテスト ─────────────────────────────────────
+
+class TestRiskMapUrl:
+    """riskMapUrlから危険度マップURLを正しく取得できることを検証する"""
+
+    def test_xml_includes_risk_map_url(self):
+        """_parse_xmlがrisk_map_urlフィールドを返すことを検証"""
+        from app.services.mofa_service import _parse_xml
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>1</riskLevel1>"
+            "<riskTitle>危険情報</riskTitle><riskLead>概要</riskLead>"
+            "<riskMapUrl>https://www.anzen.mofa.go.jp/info/map/2025T030_1_Detail.html</riskMapUrl>"
+            "</opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert result["risk_map_url"] == "https://www.anzen.mofa.go.jp/info/map/2025T030_1_Detail.html"
+
+    def test_xml_without_risk_map_url(self):
+        """riskMapUrlがないXMLではrisk_map_urlがNone"""
+        from app.services.mofa_service import _parse_xml
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>0</riskLevel1></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert result["risk_map_url"] is None
+
+    def test_risk_map_url_in_api_response(self, client: TestClient):
+        """APIレスポンスにrisk_map_urlが含まれることを検証"""
+        mock_safety = {
+            **MOCK_SAFETY,
+            "risk_map_url": "https://www.anzen.mofa.go.jp/info/map/2025T030_1_Detail.html",
+        }
+        with patch(
+            "app.services.mofa_service.MofaSafetyService.get_safety_info",
+            new_callable=AsyncMock,
+            return_value=mock_safety,
+        ), patch(
+            "app.services.state_dept_service.StateDeptService.get_advisory",
+            new_callable=AsyncMock,
+            return_value={"level": 0, "message": "情報取得失敗"},
+        ):
+            response = client.get("/api/countries/IN/safety")
+        data = response.json()
+        assert data["risk_map_url"] == "https://www.anzen.mofa.go.jp/info/map/2025T030_1_Detail.html"

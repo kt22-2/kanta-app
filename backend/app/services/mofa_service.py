@@ -285,6 +285,9 @@ def _parse_xml(xml_bytes: bytes) -> dict:
     risk_sub_text = _get_text(root, "riskSubText")
     regional_risks = _parse_regional_risks(risk_sub_text) if risk_sub_text else []
 
+    # --- 危険度マップURL ---
+    risk_map_url = _get_text(root, "riskMapUrl") or None
+
     return {
         "level": level,
         "summary": summary,
@@ -293,6 +296,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         "infection_level": infection_level,
         "safety_measure_url": safety_measure_url,
         "regional_risks": regional_risks,
+        "risk_map_url": risk_map_url,
     }
 
 

@@ -6,6 +6,7 @@ import {
   Thermometer,
   Mail,
   MapPin,
+  Map,
 } from "lucide-react";
 import type { SafetyInfo, SafetyLevel } from "@/lib/types";
 import { getSafetyColor } from "@/lib/utils";
@@ -86,6 +87,38 @@ export default function SafetySection({ safety }: Props) {
               <div>
                 <p className="font-bold text-foreground">感染症危険情報</p>
                 <p className="text-sm text-orange-400">レベル {safety.infection_level}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 危険度マップ */}
+          {safety.risk_map_url && (
+            <div>
+              <h3 className="mb-3 font-bold text-foreground flex items-center gap-2">
+                <Map className="h-4 w-4 text-accent" />
+                危険度マップ
+              </h3>
+              <div className="rounded-xl glass-card overflow-hidden">
+                <iframe
+                  src={safety.risk_map_url}
+                  title="外務省危険度マップ"
+                  className="w-full border-0"
+                  style={{ height: "480px" }}
+                  loading="lazy"
+                  sandbox="allow-scripts allow-same-origin"
+                />
+                <div className="px-4 py-2 border-t border-white/6 flex items-center justify-between">
+                  <span className="text-xs text-muted">出典: 外務省海外安全ホームページ</span>
+                  <a
+                    href={safety.risk_map_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                  >
+                    拡大表示
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
             </div>
           )}
