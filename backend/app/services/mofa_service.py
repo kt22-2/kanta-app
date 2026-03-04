@@ -177,10 +177,10 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         category = WIDEAREA_CATEGORIES.get(type_cd, "広域情報")
         desc = spot_title
         if spot_lead:
-            # Calculate remaining space for lead text to ensure total <= 700 chars
-            remaining = 700 - len(desc) - 1  # -1 for the "。" separator
+            # Calculate remaining space for lead text to ensure total <= 1500 chars
+            remaining = 1500 - len(desc) - 1  # -1 for the "。" separator
             if remaining > 0:
-                desc += f"。{spot_lead[:min(remaining, 350)]}"
+                desc += f"。{spot_lead[:remaining]}"
         details.append({
             "category": category,
             "description": desc,
@@ -200,15 +200,15 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         seen_titles.add(mail_title)
         desc = mail_title
         if mail_lead:
-            # Calculate remaining space for lead text to ensure total <= 700 chars
-            remaining = 700 - len(desc) - 1  # -1 for the "。" separator
+            # Calculate remaining space for lead text to ensure total <= 1500 chars
+            remaining = 1500 - len(desc) - 1  # -1 for the "。" separator
             if remaining > 0:
-                desc += f"。{mail_lead[:min(remaining, 350)]}"
+                desc += f"。{mail_lead[:remaining]}"
         if mail_date:
-            # Add date prefix and ensure total length doesn't exceed 700 chars
+            # Add date prefix and ensure total length doesn't exceed 1500 chars
             date_prefix = f"[{mail_date[:10]}] "
             desc = date_prefix + desc
-            desc = desc[:700]
+            desc = desc[:1500]
         details.append({
             "category": "領事メール",
             "description": desc,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { KANTA_SOCIAL } from "@/lib/livestream-data";
 
 type TwttrWindow = Window &
@@ -13,10 +14,13 @@ type TwttrWindow = Window &
     };
   };
 
+const RENDER_TIMEOUT_MS = 8000;
+
 export default function XFeed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const scriptLoaded = useRef(false);
   const [error, setError] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -60,10 +64,30 @@ export default function XFeed() {
     }
   }, []);
 
-  if (error) {
+  // タイムアウト検出: iframeが描画されなければフォールバック
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      if (container && !container.querySelector("iframe")) {
+        setTimedOut(true);
+      }
+    }, RENDER_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (error || timedOut) {
     return (
-      <div data-testid="x-timeline" className="text-red-400 text-sm p-4">
-        タイムラインの読み込みに失敗しました
+      <div data-testid="x-timeline" className="glass-card p-6 text-center">
+        <p className="text-sm text-muted mb-3">タイムラインを表示できません</p>
+        <a
+          href={KANTA_SOCIAL.x}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-accent hover:underline text-sm"
+        >
+          Xで見る
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
       </div>
     );
   }

@@ -7,6 +7,7 @@ const originalAppendChild = document.body.appendChild.bind(document.body);
 
 beforeEach(() => {
   appendedScripts = [];
+  jest.useFakeTimers();
   jest.spyOn(document.body, "appendChild").mockImplementation((node: Node) => {
     if (node instanceof HTMLScriptElement && node.src.includes("twitter")) {
       appendedScripts.push(node);
@@ -21,6 +22,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
   jest.restoreAllMocks();
 });
 
@@ -97,7 +99,55 @@ describe("XFeed", () => {
     });
 
     expect(
-      screen.getByText(/タイムラインの読み込みに失敗しました/)
+      screen.getByText(/タイムラインを表示できません/)
     ).toBeInTheDocument();
+  });
+
+  it("タイムアウト後にiframeが無い場合フォールバックUIを表示する", () => {
+    render(<XFeed />);
+
+    // タイムアウト前はタイムラインリンクが表示されている
+    expect(screen.getByText("読み込み中...")).toBeInTheDocument();
+
+    // 8秒経過（iframeは生成されていない）
+    act(() => {
+      jest.advanceTimersByTime(8000);
+    });
+
+    expect(
+      screen.getByText(/タイムラインを表示できません/)
+    ).toBeInTheDocument();
+    expect(screen.getByText("Xで見る")).toBeInTheDocument();
+  });
+
+  it("タイムアウト前にiframeが存在する場合はフォールバックしない", () => {
+    render(<XFeed />);
+
+    const container = screen.getByTestId("x-timeline");
+    // ウィジェットがiframeを生成した状態を模擬
+    const iframe = document.createElement("iframe");
+    container.appendChild(iframe);
+
+    act(() => {
+      jest.advanceTimersByTime(8000);
+    });
+
+    // フォールバックは表示されない
+    expect(
+      screen.queryByText(/タイムラインを表示できません/)
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("読み込み中...")).toBeInTheDocument();
+  });
+
+  it("フォールバックUIにXプロフィールへのリンクがある", () => {
+    render(<XFeed />);
+
+    act(() => {
+      jest.advanceTimersByTime(8000);
+    });
+
+    const link = screen.getByText("Xで見る");
+    expect(link).toHaveAttribute("href", "https://x.com/anta_kaoi");
+    expect(link).toHaveAttribute("target", "_blank");
   });
 });
