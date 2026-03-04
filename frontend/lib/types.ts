@@ -31,6 +31,12 @@ export interface SafetyDetail {
   severity: "low" | "medium" | "high";
 }
 
+export interface RegionalRisk {
+  region: string;
+  level: number;
+  description: string;
+}
+
 export interface SafetyInfo {
   country_code: string;
   level: SafetyLevel;
@@ -41,6 +47,7 @@ export interface SafetyInfo {
   mofa_url?: string;
   infection_level?: number;
   safety_measure_url?: string;
+  regional_risks?: RegionalRisk[];
 }
 
 export interface EntryRequirement {

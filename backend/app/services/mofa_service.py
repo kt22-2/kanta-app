@@ -1,9 +1,10 @@
 """外務省 海外安全情報サービス（XML OpenData API版）
-URL: https://www.ezairyu.mofa.go.jp/opendata/country/{4桁電話コード}.xml
+URL: https://www.ezairyu.mofa.go.jp/opendata/country/{4桁電話コード}A.xml
 6時間インメモリキャッシュ付き
 """
 from __future__ import annotations
 
+import re
 import time
 import xml.etree.ElementTree as ET
 
@@ -90,7 +91,7 @@ ISO_TO_MOFA_XML: dict[str, str] = {
     "SB": "0677",
 }
 
-MOFA_XML_BASE_URL = "https://www.ezairyu.mofa.go.jp/opendata/country/{code}.xml"
+MOFA_XML_BASE_URL = "https://www.ezairyu.mofa.go.jp/opendata/country/{code}A.xml"
 CACHE_TTL = 6 * 3600  # 6時間
 
 _cache: dict[str, tuple[dict, float]] = {}
@@ -102,6 +103,62 @@ def _get_text(root: ET.Element, tag: str) -> str:
     return el.text.strip() if el is not None and el.text else ""
 
 
+# 全角→半角数字変換テーブル
+_FULLWIDTH_DIGITS = str.maketrans("０１２３４５６７８９", "0123456789")
+
+# レベル抽出パターン（半角・全角両対応）
+_LEVEL_RE = re.compile(r"レベル[１２３４1234]")
+
+
+def _parse_regional_risks(text: str) -> list[dict]:
+    """riskSubTextから地域別危険度情報を抽出する。
+
+    テキスト形式:
+      ●大地域名
+      ・サブ地域名
+      　レベルN：説明文
+    """
+    if not text:
+        return []
+
+    results: list[dict] = []
+    current_major = ""  # ●で始まる大地域名
+    current_sub = ""    # ・で始まるサブ地域名
+
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        if stripped.startswith("●"):
+            current_major = stripped[1:].strip()
+            current_sub = ""
+        elif stripped.startswith("・"):
+            current_sub = stripped[1:].strip()
+        elif _LEVEL_RE.search(stripped):
+            # 全角数字→半角に変換してからレベル抽出
+            normalized = stripped.translate(_FULLWIDTH_DIGITS)
+            m = re.search(r"レベル([1-4])", normalized)
+            if m:
+                level = int(m.group(1))
+                # 「レベルN：説明文」から説明文を抽出
+                desc_match = re.search(r"レベル[1-4][：:](.+)", normalized)
+                description = desc_match.group(1).strip() if desc_match else ""
+                # 地域名を構築
+                if current_sub:
+                    region = f"{current_major} {current_sub}"
+                else:
+                    region = current_major
+                if region:
+                    results.append({
+                        "region": region,
+                        "level": level,
+                        "description": description,
+                    })
+
+    return results
+
+
 def _parse_xml(xml_bytes: bytes) -> dict:
     """外務省XMLオープンデータから安全情報を詳細に抽出する。"""
     try:
@@ -111,6 +168,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
             "level": 1, "summary": LEVEL_SUMMARIES[1],
             "details": [], "mofa_url": None,
             "infection_level": 0, "safety_measure_url": None,
+            "regional_risks": [],
         }
 
     # --- 危険レベル ---
@@ -223,6 +281,10 @@ def _parse_xml(xml_bytes: bytes) -> dict:
             "severity": "low",
         })
 
+    # --- 地域別危険度 ---
+    risk_sub_text = _get_text(root, "riskSubText")
+    regional_risks = _parse_regional_risks(risk_sub_text) if risk_sub_text else []
+
     return {
         "level": level,
         "summary": summary,
@@ -230,6 +292,7 @@ def _parse_xml(xml_bytes: bytes) -> dict:
         "mofa_url": mofa_url,
         "infection_level": infection_level,
         "safety_measure_url": safety_measure_url,
+        "regional_risks": regional_risks,
     }
 
 

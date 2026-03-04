@@ -5,6 +5,7 @@ import {
   ExternalLink,
   Thermometer,
   Mail,
+  MapPin,
 } from "lucide-react";
 import type { SafetyInfo, SafetyLevel } from "@/lib/types";
 import { getSafetyColor } from "@/lib/utils";
@@ -25,6 +26,20 @@ function parseMailDesc(desc: string) {
   const m = desc.match(/^\[(\d{4}-\d{2}-\d{2})\]\s*([\s\S]+)$/);
   return m ? { date: m[1], text: m[2] } : { date: null, text: desc };
 }
+
+const regionalLevelColors: Record<number, string> = {
+  1: "border-yellow-500/30 bg-yellow-500/10 text-yellow-400",
+  2: "border-orange-500/30 bg-orange-500/10 text-orange-400",
+  3: "border-red-500/30 bg-red-500/10 text-red-400",
+  4: "border-red-600/30 bg-red-600/10 text-red-300",
+};
+
+const regionalLevelLabels: Record<number, string> = {
+  1: "十分注意",
+  2: "不要不急の渡航中止",
+  3: "渡航中止勧告",
+  4: "退避勧告",
+};
 
 export default function SafetySection({ safety }: Props) {
   return (
@@ -71,6 +86,34 @@ export default function SafetySection({ safety }: Props) {
               <div>
                 <p className="font-bold text-foreground">感染症危険情報</p>
                 <p className="text-sm text-orange-400">レベル {safety.infection_level}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 地域別危険度 */}
+          {safety.regional_risks && safety.regional_risks.length > 0 && (
+            <div>
+              <h3 className="mb-3 font-bold text-foreground flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-accent" />
+                地域別危険度
+              </h3>
+              <div className="space-y-2">
+                {safety.regional_risks.map((risk, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-start gap-3 rounded-xl border p-3 ${regionalLevelColors[risk.level] ?? "border-white/10 bg-white/5 text-muted"}`}
+                  >
+                    <span className="shrink-0 rounded-md bg-current/10 px-2 py-0.5 text-xs font-bold">
+                      Lv.{risk.level}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">{risk.region}</p>
+                      <p className="text-xs opacity-80">
+                        {risk.description || regionalLevelLabels[risk.level] || ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

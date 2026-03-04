@@ -1,4 +1,5 @@
 """TDD: 安全情報APIのテスト"""
+import re
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -275,3 +276,90 @@ class TestNoTextTruncation:
         mail_details = [d for d in result["details"] if d["category"] == "領事メール"]
         assert len(mail_details) == 1
         assert long_mail_lead in mail_details[0]["description"]
+
+
+# ── 地域別危険度パーステスト ─────────────────────────────────────
+
+class TestRegionalRisks:
+    """riskSubTextから地域別危険度を正しくパースできることを検証する"""
+
+    def test_parse_regional_risks_basic(self):
+        from app.services.mofa_service import _parse_regional_risks
+        text = (
+            "【危険レベル】\n"
+            "●ジャンム・カシミール準州\n"
+            "・管理ライン（LoC）付近\n"
+            "　レベル4：退避してください。渡航は止めてください。（退避勧告）（継続）\n"
+            "・スリナガル及びその近郊\n"
+            "　レベル2：不要不急の渡航は止めてください。（継続）\n"
+            "●上記以外の全域\n"
+            "　レベル1：十分注意してください。（継続）\n"
+        )
+        result = _parse_regional_risks(text)
+        assert len(result) == 3
+        assert result[0]["region"] == "ジャンム・カシミール準州 管理ライン（LoC）付近"
+        assert result[0]["level"] == 4
+        assert "退避してください" in result[0]["description"]
+        assert result[1]["level"] == 2
+        assert result[2]["region"] == "上記以外の全域"
+        assert result[2]["level"] == 1
+
+    def test_parse_regional_risks_empty(self):
+        from app.services.mofa_service import _parse_regional_risks
+        assert _parse_regional_risks("") == []
+
+    def test_parse_regional_risks_no_level(self):
+        from app.services.mofa_service import _parse_regional_risks
+        text = "【ポイント】\n治安が改善されています。\n"
+        assert _parse_regional_risks(text) == []
+
+    def test_parse_regional_risks_region_direct_level(self):
+        """大地域名の直後にレベルがある場合（サブ地域なし）"""
+        from app.services.mofa_service import _parse_regional_risks
+        text = (
+            "●全土\n"
+            "　レベル3：渡航は止めてください。（渡航中止勧告）（継続）\n"
+        )
+        result = _parse_regional_risks(text)
+        assert len(result) == 1
+        assert result[0]["region"] == "全土"
+        assert result[0]["level"] == 3
+
+    def test_parse_regional_risks_fullwidth_level(self):
+        """全角数字のレベル表記にも対応"""
+        from app.services.mofa_service import _parse_regional_risks
+        text = (
+            "●北東部諸州\n"
+            "・アッサム州\n"
+            "　レベル１：十分注意してください（引き下げ）\n"
+        )
+        result = _parse_regional_risks(text)
+        assert len(result) == 1
+        assert result[0]["level"] == 1
+
+    def test_xml_includes_regional_risks(self):
+        """_parse_xmlがregional_risksフィールドを返すことを検証"""
+        from app.services.mofa_service import _parse_xml
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>1</riskLevel4><riskLevel3>1</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>0</riskLevel1>"
+            "<riskTitle>危険情報</riskTitle><riskLead>概要</riskLead>"
+            "<riskSubText>●全土\n　レベル4：退避してください。（退避勧告）</riskSubText>"
+            "</opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert "regional_risks" in result
+        assert len(result["regional_risks"]) == 1
+        assert result["regional_risks"][0]["level"] == 4
+
+    def test_xml_without_risk_sub_text(self):
+        """riskSubTextがないXMLではregional_risksが空リスト"""
+        from app.services.mofa_service import _parse_xml
+        xml = (
+            '<?xml version="1.0"?>'
+            "<opendata><riskLevel4>0</riskLevel4><riskLevel3>0</riskLevel3>"
+            "<riskLevel2>0</riskLevel2><riskLevel1>0</riskLevel1></opendata>"
+        ).encode("utf-8")
+        result = _parse_xml(xml)
+        assert result["regional_risks"] == []

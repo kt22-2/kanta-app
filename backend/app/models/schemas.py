@@ -34,6 +34,12 @@ class SafetyDetail(BaseModel):
     severity: str  # "low" | "medium" | "high"
 
 
+class RegionalRisk(BaseModel):
+    region: str
+    level: int  # 1-4
+    description: str
+
+
 class SafetyInfo(BaseModel):
     country_code: str
     level: int  # 0=安全 1=注意 2=危険 3=渡航中止 4=退避勧告
@@ -44,6 +50,7 @@ class SafetyInfo(BaseModel):
     mofa_url: str | None = None
     infection_level: int = 0
     safety_measure_url: str | None = None
+    regional_risks: list[RegionalRisk] = []
 
 
 class EntryRequirement(BaseModel):

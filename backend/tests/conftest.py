@@ -33,6 +33,7 @@ MOCK_SAFETY = {
         }
     ],
     "last_updated": None,
+    "regional_risks": [],
 }
 
 MOCK_ENTRY = {
