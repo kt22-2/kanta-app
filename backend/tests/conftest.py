@@ -9,7 +9,7 @@ MOCK_COUNTRY = {
     "name": "Japan",
     "name_ja": "日本",
     "capital": "Tokyo",
-    "region": "Asia",
+    "region": "アジア",
     "subregion": "Eastern Asia",
     "population": 125700000,
     "languages": ["Japanese"],

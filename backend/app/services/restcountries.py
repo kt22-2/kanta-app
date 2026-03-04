@@ -14,13 +14,39 @@ def _is_expired(ts: float) -> bool:
     return time.time() - ts > settings.cache_ttl_hours * 3600
 
 
-REGION_MAP = {
-    "Africa": "アフリカ",
-    "Americas": "アメリカ",
-    "Asia": "アジア",
-    "Europe": "ヨーロッパ",
-    "Oceania": "オセアニア",
-    "Antarctic": "南極",
+# RestCountries subregion → 外務省地域区分
+SUBREGION_TO_MOFA = {
+    "Eastern Asia": "アジア",
+    "South-Eastern Asia": "アジア",
+    "Southern Asia": "アジア",
+    "Central Asia": "アジア",
+    "Western Asia": "中東",
+    "Northern Europe": "欧州",
+    "Western Europe": "欧州",
+    "Southern Europe": "欧州",
+    "Eastern Europe": "欧州",
+    "Northern America": "北米",
+    "Central America": "中南米",
+    "South America": "中南米",
+    "Caribbean": "中南米",
+    "Northern Africa": "アフリカ",
+    "Eastern Africa": "アフリカ",
+    "Western Africa": "アフリカ",
+    "Southern Africa": "アフリカ",
+    "Middle Africa": "アフリカ",
+    "Australia and New Zealand": "大洋州",
+    "Melanesia": "大洋州",
+    "Micronesia": "大洋州",
+    "Polynesia": "大洋州",
+}
+
+# 国コード別の上書き（外務省の分類に合わせる）
+MOFA_REGION_OVERRIDES = {
+    "EG": "中東",  # エジプト: 外務省は中東に分類
+    "CY": "欧州",  # キプロス: RestCountriesはAsiaだが外務省は欧州
+    "GE": "欧州",  # ジョージア: 外務省は欧州(NIS)に分類
+    "AM": "欧州",  # アルメニア: 外務省は欧州(NIS)に分類
+    "AZ": "欧州",  # アゼルバイジャン: 外務省は欧州(NIS)に分類
 }
 
 NAME_JA_MAP = {
@@ -304,12 +330,15 @@ def _parse_country(raw: dict) -> dict:
     flags = raw.get("flags", {})
     flag_url = flags.get("svg") or flags.get("png") or ""
 
+    subregion = raw.get("subregion") or ""
+    mofa_region = MOFA_REGION_OVERRIDES.get(code) or SUBREGION_TO_MOFA.get(subregion, "")
+
     return {
         "code": code,
         "name": name_common,
         "name_ja": NAME_JA_MAP.get(code),
         "capital": raw.get("capital", [None])[0] if raw.get("capital") else None,
-        "region": raw.get("region", ""),
+        "region": mofa_region,
         "subregion": raw.get("subregion"),
         "population": raw.get("population", 0),
         "languages": list(languages_raw.values()),

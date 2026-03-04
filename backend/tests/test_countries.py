@@ -95,7 +95,7 @@ def test_get_countries_with_region_filter(client: TestClient):
         new_callable=AsyncMock,
         return_value=mock_countries,
     ):
-        response = client.get("/api/countries?region=Asia")
+        response = client.get("/api/countries?region=アジア")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -136,8 +136,8 @@ def test_get_countries_with_safety_level_filter(client: TestClient):
 def test_get_countries_with_region_and_safety_level_filter(client: TestClient):
     """地域＋危険度の複合フィルタのテスト"""
     mock_countries_asia = [
-        {**MOCK_COUNTRY, "code": "JP", "region": "Asia", "safety_level": 0},
-        {**MOCK_COUNTRY, "code": "TH", "region": "Asia", "safety_level": 1},
+        {**MOCK_COUNTRY, "code": "JP", "region": "アジア", "safety_level": 0},
+        {**MOCK_COUNTRY, "code": "TH", "region": "アジア", "safety_level": 1},
     ]
     with patch(
         "app.services.restcountries.RestCountriesService.get_all_countries",
@@ -149,8 +149,8 @@ def test_get_countries_with_region_and_safety_level_filter(client: TestClient):
         countries_module._safety_cache = {"JP": 0, "TH": 1}
         countries_module._safety_cache_ts = 9999999999.0  # 期限切れしない値
 
-        # region=Asia + safety_level=0でフィルタ
-        response = client.get("/api/countries?region=Asia&safety_level=0")
+        # region=アジア + safety_level=0でフィルタ
+        response = client.get("/api/countries?region=アジア&safety_level=0")
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1

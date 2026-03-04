@@ -13,7 +13,7 @@ import { getRegionLabel } from "@/lib/utils";
 import { HERITAGE_COUNT } from "@/lib/heritage-counts";
 import type { SafetyLevel } from "@/lib/types";
 
-const REGIONS = ["Asia", "Europe", "Americas", "Africa", "Oceania"];
+const REGIONS = ["アジア", "大洋州", "北米", "中南米", "欧州", "中東", "アフリカ"];
 type SortKey = "name" | "population" | "safety" | "heritage";
 
 const SAFETY_FILTERS: Array<{ level: SafetyLevel | null; label: string; activeClass: string }> = [

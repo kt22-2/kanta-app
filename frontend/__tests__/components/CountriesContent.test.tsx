@@ -23,7 +23,7 @@ const mockCountries: Country[] = [
     name: "Japan",
     name_ja: "日本",
     capital: "Tokyo",
-    region: "Asia",
+    region: "アジア",
     population: 125_700_000,
     languages: ["Japanese"],
     currencies: [{ code: "JPY", name: "Japanese yen", symbol: "¥" }],
@@ -35,7 +35,7 @@ const mockCountries: Country[] = [
     name: "France",
     name_ja: "フランス",
     capital: "Paris",
-    region: "Europe",
+    region: "欧州",
     population: 67_391_582,
     languages: ["French"],
     currencies: [{ code: "EUR", name: "Euro", symbol: "€" }],
@@ -86,7 +86,7 @@ describe("CountriesContent", () => {
     const buttonTexts = buttons.map((b) => b.textContent);
     expect(buttonTexts).toContain("全て");
     expect(buttonTexts).toContain("アジア");
-    expect(buttonTexts).toContain("ヨーロッパ");
+    expect(buttonTexts).toContain("欧州");
   });
 
   it("リージョンボタンのクリックで state が更新される", () => {

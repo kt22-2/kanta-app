@@ -57,16 +57,14 @@ describe("getSafetyLabel", () => {
 });
 
 describe("getRegionLabel", () => {
-  it("Asiaはアジアを返す", () => {
-    expect(getRegionLabel("Asia")).toBe("アジア");
+  it("日本語の地域名をそのまま返す", () => {
+    expect(getRegionLabel("アジア")).toBe("アジア");
+    expect(getRegionLabel("欧州")).toBe("欧州");
+    expect(getRegionLabel("中東")).toBe("中東");
   });
 
-  it("Europeはヨーロッパを返す", () => {
-    expect(getRegionLabel("Europe")).toBe("ヨーロッパ");
-  });
-
-  it("未知の地域はそのまま返す", () => {
-    expect(getRegionLabel("Unknown")).toBe("Unknown");
+  it("空文字列は不明を返す", () => {
+    expect(getRegionLabel("")).toBe("不明");
   });
 });
 

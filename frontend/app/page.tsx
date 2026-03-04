@@ -3,11 +3,13 @@ import { Globe, Shield, Plane, MapPin, ChevronRight } from "lucide-react";
 import CounterAnimation from "@/components/CounterAnimation";
 
 const REGIONS = [
-  { id: "Asia", label: "アジア", emoji: "🌏", countries: 49, flags: "🇯🇵🇹🇭🇰🇷" },
-  { id: "Europe", label: "ヨーロッパ", emoji: "🌍", countries: 44, flags: "🇫🇷🇩🇪🇮🇹" },
-  { id: "Americas", label: "アメリカ", emoji: "🌎", countries: 35, flags: "🇺🇸🇧🇷🇲🇽" },
-  { id: "Africa", label: "アフリカ", emoji: "🌍", countries: 54, flags: "🇪🇬🇰🇪🇿🇦" },
-  { id: "Oceania", label: "オセアニア", emoji: "🌏", countries: 14, flags: "🇦🇺🇳🇿🇫🇯" },
+  { id: "アジア", label: "アジア", emoji: "🌏", countries: 47, flags: "🇯🇵🇹🇭🇰🇷" },
+  { id: "大洋州", label: "大洋州", emoji: "🌏", countries: 14, flags: "🇦🇺🇳🇿🇫🇯" },
+  { id: "北米", label: "北米", emoji: "🌎", countries: 5, flags: "🇺🇸🇨🇦🇲🇽" },
+  { id: "中南米", label: "中南米", emoji: "🌎", countries: 33, flags: "🇧🇷🇦🇷🇨🇱" },
+  { id: "欧州", label: "欧州", emoji: "🌍", countries: 47, flags: "🇫🇷🇩🇪🇮🇹" },
+  { id: "中東", label: "中東", emoji: "🌍", countries: 17, flags: "🇦🇪🇸🇦🇶🇦" },
+  { id: "アフリカ", label: "アフリカ", emoji: "🌍", countries: 54, flags: "🇪🇬🇰🇪🇿🇦" },
 ];
 
 const FEATURES = [

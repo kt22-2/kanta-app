@@ -7,7 +7,7 @@ const mockCountry: Country = {
   name: "Japan",
   name_ja: "日本",
   capital: "Tokyo",
-  region: "Asia",
+  region: "アジア",
   population: 125_700_000,
   languages: ["Japanese"],
   currencies: [{ code: "JPY", name: "Japanese yen", symbol: "¥" }],

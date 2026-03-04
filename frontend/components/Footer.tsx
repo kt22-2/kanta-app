@@ -4,11 +4,13 @@ import { Compass, ExternalLink } from "lucide-react";
 const NAV_LINKS = [
   { href: "/countries", label: "国一覧" },
   { href: "/journey", label: "KANTAの軌跡" },
-  { href: "/countries?region=Asia", label: "アジア" },
-  { href: "/countries?region=Europe", label: "ヨーロッパ" },
-  { href: "/countries?region=Americas", label: "アメリカ" },
-  { href: "/countries?region=Africa", label: "アフリカ" },
-  { href: "/countries?region=Oceania", label: "オセアニア" },
+  { href: "/countries?region=アジア", label: "アジア" },
+  { href: "/countries?region=大洋州", label: "大洋州" },
+  { href: "/countries?region=北米", label: "北米" },
+  { href: "/countries?region=中南米", label: "中南米" },
+  { href: "/countries?region=欧州", label: "欧州" },
+  { href: "/countries?region=中東", label: "中東" },
+  { href: "/countries?region=アフリカ", label: "アフリカ" },
 ];
 
 const DATA_SOURCES = [

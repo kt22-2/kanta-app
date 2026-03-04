@@ -56,13 +56,5 @@ export function formatTimezoneFromJapan(utcOffset: string): string {
 }
 
 export function getRegionLabel(region: string): string {
-  const map: Record<string, string> = {
-    Africa: "アフリカ",
-    Americas: "アメリカ",
-    Asia: "アジア",
-    Europe: "ヨーロッパ",
-    Oceania: "オセアニア",
-    Antarctic: "南極",
-  };
-  return map[region] ?? region;
+  return region || "不明";
 }
